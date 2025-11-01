@@ -7,7 +7,7 @@ import 'startfund.dart';
 import 'donate.dart';
 import 'report.dart';
 import 'feedback.dart';
-
+import 'common_appbar.dart';
 void main() {
   runApp(const MyApp());
 }
@@ -44,18 +44,7 @@ class MyHomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('FundBridge Home'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            tooltip: 'Go to Profile',
-            onPressed: () {
-              Navigator.pushNamed(context, '/Profile');
-            },
-          ),
-        ],
-      ),
+      appBar: const CommonAppBar(title: 'FundBridge'),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
