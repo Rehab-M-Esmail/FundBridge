@@ -23,23 +23,25 @@ class _FundPostState extends State<fundpost> {
             // === Main Image with flag and side icons ===
             Stack(
               children: [
-                Container(
+                Align(
+  alignment: Alignment.topCenter,
+                child: Container(
                   height: 200,
-                  width: double.infinity,
+                  width: 200,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.circular(12),
                   ),
-                ),
-                // Small flag icon
-                Positioned(
+                   // Small flag icon
+                child: Positioned(
                   top: 10,
                   right: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.flag, color: Color.fromARGB(255, 0, 0, 0)),
-                    onPressed: () {},
-                  ),
+                  child:Text('🇪🇬', style: TextStyle(fontSize: 24)),
                 ),
+                ),
+
+                ),
+               
                 // Side icons (star, share, repost)
                 Positioned(
                   right: 10,
@@ -141,7 +143,8 @@ class _FundPostState extends State<fundpost> {
                 scrollDirection: Axis.horizontal,
                 itemCount: 12,
                 itemBuilder: (context, index) => Container(
-                  width: 100,
+                  width: 200,
+                  height: 200,
                   margin: const EdgeInsets.only(right: 10),
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
@@ -247,18 +250,39 @@ class _DonationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: amount / 2,
-          width: 30,
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      // Profile image (circular avatar)
+      CircleAvatar(
+        radius: 25,
+        backgroundImage: AssetImage('assets/profile.jpg'), // or NetworkImage('https://...')
+      ),
+
+      const SizedBox(height: 8),
+
+      // Donation bar
+      Container(
+        height: amount / 2, // scales by amount
+        width: 30,
+        decoration: BoxDecoration(
           color: const Color.fromARGB(255, 255, 177, 118),
+          borderRadius: BorderRadius.circular(8),
         ),
-        const SizedBox(height: 6),
-        Text('\$$amount'),
-      ],
-    );
-  }
+      ),
+
+      const SizedBox(height: 6),
+
+      // Amount label
+      Text(
+        '\$$amount',
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ],
+  );
+}
 }
 
 class _CommentTile extends StatelessWidget {
