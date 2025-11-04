@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 import 'profile.dart';
 import 'signup.dart';
-import 'fundpost.dart';
+import 'screens/fundpost.dart';
 import 'startfund.dart';
 import 'donate.dart';
 import 'report.dart';
@@ -27,7 +27,6 @@ class MyApp extends StatelessWidget {
         '/Profile': (context) => const Profile(),
         '/login': (context) => const login(),
         '/signup': (context) => const signup(),
-        '/fundpost': (context) => const fundpost(),
         '/startfund': (context) => const startfund(),
         '/donate': (context) => const donate(),
         '/report': (context) => const report(),
