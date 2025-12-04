@@ -1,7 +1,6 @@
-import "dart:convert";
 import 'package:flutter/material.dart';
 import "package:font_awesome_flutter/font_awesome_flutter.dart";
-import "package:http/http.dart" as http;
+import "package:fund_bridge/services/userService.dart";
 
 class Signup extends StatefulWidget {
   const Signup({super.key});
@@ -16,6 +15,7 @@ class _SignupState extends State<Signup> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   bool isPasswordVisible = true;
+  UserService userService = UserService();
 
   void toggleVisibility() {
     setState(() {
@@ -207,7 +207,25 @@ class _SignupState extends State<Signup> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    if (formKey.currentState!.validate()) {
+                      userService.createUser(
+                        name.text,
+                        email.text,
+                        password.text,
+                      );
+                      print(userService.getAllUsers());
+                      Navigator.pushNamed(context, "/");
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Data input has some mistakes"),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,
