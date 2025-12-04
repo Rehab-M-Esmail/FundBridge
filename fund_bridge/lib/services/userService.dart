@@ -1,5 +1,4 @@
 import 'package:fund_bridge/services/database.dart';
-import 'package:sqflite/sqflite.dart';
 
 class UserService {
   final DatabaseService databaseService = DatabaseService.instance;

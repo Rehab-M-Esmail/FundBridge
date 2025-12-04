@@ -207,7 +207,7 @@ class _SignupState extends State<Signup> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async{
                     if (formKey.currentState!.validate()) {
                       userService.createUser(
                         name.text,

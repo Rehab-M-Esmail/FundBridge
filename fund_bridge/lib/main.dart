@@ -3,7 +3,7 @@ import 'package:fund_bridge/screens/login.dart';
 import 'package:fund_bridge/screens/main_scaffold.dart';
 import 'package:fund_bridge/screens/signup.dart';
 
-void main() {
+void main()  {
   runApp(const MyApp());
 }
 
