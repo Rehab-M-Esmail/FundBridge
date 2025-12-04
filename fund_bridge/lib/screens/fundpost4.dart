@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
-import 'package:fund_bridge/screens/fundpost3.dart';
 
-class FundPostPage2 extends StatefulWidget {
-  const FundPostPage2({super.key});
+class FundPostPage4 extends StatefulWidget {
+  const FundPostPage4({super.key});
 
   @override
-  State<FundPostPage2> createState() => _FundPostPage2State();
+  State<FundPostPage4> createState() => _FundPostPage4State();
 }
 
-class _FundPostPage2State extends State<FundPostPage2> {
+class _FundPostPage4State extends State<FundPostPage4> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -29,7 +28,7 @@ class _FundPostPage2State extends State<FundPostPage2> {
               image: AssetImage("imgs/logo.png"),
             ),
             Text(
-              "2 of 5",
+              "4 of 5",
               style: TextStyle(
                 fontSize: 15,
                 fontFamily: "Poppins",
@@ -98,21 +97,13 @@ class _FundPostPage2State extends State<FundPostPage2> {
                   style: TextStyle(
                     color: Color(0xff333333),
                     fontFamily: "Poppins",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
             ),
-            LongButton(
-              text: "Continue",
-              action: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FundPostPage3()),
-                );
-              },
-            ),
+            LongButton(text: "Continue", action: () {}),
           ],
         ),
       ),

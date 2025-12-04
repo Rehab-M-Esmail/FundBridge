@@ -34,10 +34,13 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  font_awesome_flutter: ^10.12.0
+  google_nav_bar: ^5.0.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  image_picker: ^1.0.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -84,6 +87,9 @@ flutter:
     - family: Roboto
       fonts:
         - asset: fonts/Roboto_Condensed-Light.ttf
+    - family: Roboto
+      fonts:
+        - asset: fonts/Poppins-Medium.ttf
   #   - family: Schyler
   #     fonts:
   #       - asset: fonts/Schyler-Regular.ttf

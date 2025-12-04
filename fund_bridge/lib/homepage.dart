@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
+import 'package:fund_bridge/screens/login.dart';
+import 'package:fund_bridge/screens/signup.dart';
 import 'profile.dart';
-import 'signup.dart';
 import 'screens/fundpost.dart';
-import 'startfund.dart';
 import 'donate.dart';
 import 'report.dart';
 import 'feedback.dart';
@@ -25,9 +24,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => const MyHomePage(),
         '/Profile': (context) => const Profile(),
-        '/login': (context) => const login(),
-        '/signup': (context) => const signup(),
-        '/startfund': (context) => const startfund(),
+        '/login': (context) => const Login(),
+        '/signup': (context) => const Signup(),
+        '/startfund': (context) => const FundPostPage1(),
         '/donate': (context) => const donate(),
         '/report': (context) => const report(),
         '/feedback': (context) => const feedback(),

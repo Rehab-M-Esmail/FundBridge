@@ -33,7 +33,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
               "1 of 5",
               style: TextStyle(
                 fontSize: 15,
-                fontFamily: "Roboto",
+                fontFamily: "Poppins",
                 fontWeight: FontWeight.w700,
                 color: Color(0xff333333),
               ),
@@ -42,7 +42,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
               "Tell us who you are raising funds for",
               style: TextStyle(
                 fontSize: 27,
-                fontFamily: "Roboto",
+                fontFamily: "Poppins",
                 fontWeight: FontWeight.w900,
                 color: Color(0xff333333),
               ),
@@ -85,7 +85,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                               Text(
                                 "Yourself",
                                 style: TextStyle(
-                                  fontFamily: "Roboto",
+                                  fontFamily: "Poppins",
                                   fontWeight: FontWeight.w800,
                                   fontSize: 20,
                                   color: Color(0xff333333),
@@ -96,8 +96,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                                 "Funds are delivered to your \nbank account"
                                 " for your own use",
                                 style: TextStyle(
-                                  fontFamily: "Roboto",
-                                  fontWeight: FontWeight.w600,
+                                  fontFamily: "Poppins",
+                                  fontWeight: FontWeight.w500,
                                   fontSize: 15,
                                   color: Color(0xff333333),
                                 ),
@@ -145,7 +145,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                           Text(
                             "Someone else",
                             style: TextStyle(
-                              fontFamily: "Roboto",
+                              fontFamily: "Poppins",
                               fontWeight: FontWeight.w800,
                               fontSize: 20,
                               color: Color(0xff333333),
@@ -155,8 +155,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                           Text(
                             "You will recieve a beneficiary to \nrecieve funds or distribute them",
                             style: TextStyle(
-                              fontFamily: "Roboto",
-                              fontWeight: FontWeight.w600,
+                              fontFamily: "Poppins",
+                              fontWeight: FontWeight.w500,
                               fontSize: 15,
                               color: Color(0xff333333),
                             ),
@@ -202,7 +202,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                           Text(
                             "Charity",
                             style: TextStyle(
-                              fontFamily: "Roboto",
+                              fontFamily: "Poppins",
                               fontWeight: FontWeight.w800,
                               fontSize: 20,
                               color: Color(0xff333333),
@@ -212,8 +212,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                           Text(
                             "Funds are delivered to your \nchosen nonprofit for you",
                             style: TextStyle(
-                              fontFamily: "Roboto",
-                              fontWeight: FontWeight.w600,
+                              fontFamily: "Poppins",
+                              fontWeight: FontWeight.w500,
                               fontSize: 15,
                               color: Color(0xff333333),
                             ),
