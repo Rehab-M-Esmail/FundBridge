@@ -18,6 +18,7 @@ class _FundPostPage3State extends State<FundPostPage3> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      print(pickedFile);
       setState(() {
         image = File(pickedFile.path);
       });
@@ -80,17 +81,45 @@ class _FundPostPage3State extends State<FundPostPage3> {
                       icon: Icon(Icons.add, color: Color(0xff02A95C), size: 60),
                     ),
                   )
-                : Image.file(
-                    image!,
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.cover,
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Center(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            image!,
+                            width: MediaQuery.of(context).size.width * 0.8,
+                            height: MediaQuery.of(context).size.height * 0.3,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            color: Color(0xff0D4715),
+                            onPressed: () {},
+                            icon: Icon(Icons.edit),
+                          ),
+                          IconButton(
+                            color: Color(0xff0D4715),
+                            onPressed: () {},
+                            icon: Icon(Icons.delete),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
             Spacer(),
             LongButton(
               text: "Continue",
               action: () {
-                MaterialPageRoute(builder: (context) => FundPostPage4());
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FundPostPage4()),
+                );
               },
             ),
           ],

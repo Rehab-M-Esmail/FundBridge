@@ -41,7 +41,7 @@ class _FundPostPage4State extends State<FundPostPage4> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "How much would you like to raise?",
+                  "Tell donors why you're fundraising",
                   style: TextStyle(
                     fontSize: 27,
                     fontFamily: "Poppins",
@@ -50,7 +50,7 @@ class _FundPostPage4State extends State<FundPostPage4> {
                   ),
                 ),
                 Text(
-                  "You can always change your goal as you go",
+                  "Give your fundraiser a title",
                   style: TextStyle(
                     fontSize: 16,
                     fontFamily: "Poppins",
@@ -62,9 +62,8 @@ class _FundPostPage4State extends State<FundPostPage4> {
             ),
             Form(
               child: TextFormField(
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.text,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.attach_money, color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide(color: Colors.grey, width: 2),
@@ -77,28 +76,27 @@ class _FundPostPage4State extends State<FundPostPage4> {
               ),
             ),
             Text(
-              "Keep in mind that transaction fees, including credit card and debit charges, are deducted from each donation",
+              "Tell your story",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 20,
                 fontFamily: "Poppins",
                 fontWeight: FontWeight.w900,
-                color: Color(0xff767676),
+                color: Color(0xff333333),
               ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: Color(0xffE7F0F7),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "To recieve money raised, make sure the person withdrawing has:\n\nA US social security number\nA bank account and mailing address in one of the 50 states",
-                  style: TextStyle(
-                    color: Color(0xff333333),
-                    fontFamily: "Poppins",
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
+            Form(
+              child: TextFormField(
+                keyboardType: TextInputType.multiline,
+                maxLines: 12,
+                minLines: 8,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(color: Colors.grey, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(color: Color(0xff02A95C), width: 3),
                   ),
                 ),
               ),
