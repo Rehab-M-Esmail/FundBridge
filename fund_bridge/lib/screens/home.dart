@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'common_appbar.dart';
+import '../common_appbar.dart';
 
 class SearchBar extends StatelessWidget implements PreferredSizeWidget {
   const SearchBar({super.key});

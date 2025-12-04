@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:fund_bridge/homepage.dart';
+import 'package:fund_bridge/screens/home.dart';
 import 'package:fund_bridge/screens/fundpost.dart';
 import 'package:fund_bridge/screens/login.dart';
 import 'package:fund_bridge/screens/signup.dart';
@@ -15,7 +15,7 @@ class MainScaffold extends StatefulWidget {
 }
 
 class _MainScaffoldState extends State<MainScaffold> {
-  List pages = [MyHomePage(), FundPostPage1(), Login()];
+  List pages = [home(), FundPostPage1(), Login()];
   int index = 0;
   bool isLoaded = false;
 
