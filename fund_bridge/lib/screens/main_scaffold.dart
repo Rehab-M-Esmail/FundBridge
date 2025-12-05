@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:fund_bridge/donate.dart';
 import 'package:fund_bridge/screens/home.dart';
 import 'package:fund_bridge/screens/fundpost.dart';
 import 'package:fund_bridge/screens/login.dart';
-import 'package:fund_bridge/screens/signup.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -18,6 +19,7 @@ class _MainScaffoldState extends State<MainScaffold> {
   List pages = [Home(), FundPostPage1(), Login()];
   int index = 0;
   bool isLoaded = false;
+  final storage = FlutterSecureStorage();
 
   void onTapped(int tappedIndex) {
     setState(() {
@@ -25,10 +27,20 @@ class _MainScaffoldState extends State<MainScaffold> {
     });
   }
 
+  void loadUser() async {
+    final userId = await storage.read(key: 'USER_ID');
+    setState(() {
+      if (userId != null) {
+        pages = [Home(), FundPostPage1(), donate()];
+      }
+    });
+  }
+
   @override
   void initState() {
     super.initState();
     isLoaded = true;
+    loadUser();
   }
 
   Widget build(BuildContext context) {
