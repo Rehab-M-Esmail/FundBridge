@@ -9,6 +9,7 @@ class DatabaseService {
 
   final String userTable = "user";
   final String donationsTable = "donations";
+  final String donationHistoryTable = "donation_history";
 
   Future get database async {
     if (db != null) {
@@ -27,12 +28,15 @@ class DatabaseService {
       onCreate: (db, version) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
+        await createDonationHistoryTableIfNotExists(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute("DROP TABLE IF EXISTS user;");
         await db.execute("DROP TABLE IF EXISTS donations;");
+        await db.execute("DROP TABLE IF EXISTS donation_history;");
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
+        await createDonationHistoryTableIfNotExists(db);
       },
     );
     return database;
@@ -57,6 +61,22 @@ class DatabaseService {
         description TEXT,
         image TEXT,
         FOREIGN KEY (userId) REFERENCES user(id)
+        )''');
+  }
+
+  Future createDonationHistoryTableIfNotExists(Database db) async {
+    await db.execute('''CREATE TABLE IF NOT EXISTS ${donationHistoryTable} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        campaignId INTEGER,
+        donorId INTEGER,
+        amount REAL,
+        currency TEXT,
+        paymentMethod TEXT,
+        isAnonymous INTEGER,
+        comment TEXT,
+        donatedAt TEXT,
+        FOREIGN KEY (campaignId) REFERENCES donations(id),
+        FOREIGN KEY (donorId) REFERENCES user(id)
         )''');
   }
 }

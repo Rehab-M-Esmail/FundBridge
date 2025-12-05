@@ -5,6 +5,7 @@ class Funding {
   final String description;
   final String image;
   final int fundingAmount;
+  final int currentAmount;
   final String category;
 
   Funding({
@@ -14,6 +15,7 @@ class Funding {
     required this.description,
     required this.image,
     required this.fundingAmount,
+    required this.currentAmount,
     required this.category,
   });
 
@@ -25,6 +27,7 @@ class Funding {
       description: json['description'],
       image: json['image'],
       fundingAmount: json['goal_amount'],
+      currentAmount: json['current_amount'] ?? 0,
       category: json['category'],
     );
   }
