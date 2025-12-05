@@ -27,8 +27,8 @@ class LongButton extends StatelessWidget {
         style: TextStyle(
           color: Color(0xffffffff),
           fontSize: 25,
-          fontFamily: "Roboto",
-          fontWeight: FontWeight.bold,
+          fontFamily: "Poppins",
+          fontWeight: FontWeight.normal,
         ),
       ),
     );

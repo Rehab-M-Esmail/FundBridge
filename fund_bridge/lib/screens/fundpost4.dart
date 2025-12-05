@@ -1,19 +1,25 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
-import 'package:fund_bridge/screens/fundpost3.dart';
+import 'package:fund_bridge/services/donations.dart';
 import 'package:provider/provider.dart';
 
-class FundPostPage2 extends StatefulWidget {
-  const FundPostPage2({super.key});
+class FundPostPage4 extends StatefulWidget {
+  const FundPostPage4({super.key});
 
   @override
-  State<FundPostPage2> createState() => _FundPostPage2State();
+  State<FundPostPage4> createState() => _FundPostPage4State();
 }
 
-class _FundPostPage2State extends State<FundPostPage2> {
-  TextEditingController goalController = TextEditingController();
-
+class _FundPostPage4State extends State<FundPostPage4> {
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  DonationsService donationsService = DonationsService();
+  final storage = FlutterSecureStorage();
   @override
   Widget build(BuildContext context) {
     final donationData = Provider.of<DonationProvider>(context, listen: false);
@@ -34,7 +40,7 @@ class _FundPostPage2State extends State<FundPostPage2> {
               image: AssetImage("imgs/logo.png"),
             ),
             Text(
-              "2 of 4",
+              "4 of 4",
               style: TextStyle(
                 fontSize: 15,
                 fontFamily: "Poppins",
@@ -47,7 +53,7 @@ class _FundPostPage2State extends State<FundPostPage2> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "How much would you like to raise?",
+                  "Tell donors why you're fundraising",
                   style: TextStyle(
                     fontSize: 27,
                     fontFamily: "Poppins",
@@ -56,7 +62,7 @@ class _FundPostPage2State extends State<FundPostPage2> {
                   ),
                 ),
                 Text(
-                  "You can always change your goal as you go",
+                  "Give your fundraiser a title",
                   style: TextStyle(
                     fontSize: 16,
                     fontFamily: "Poppins",
@@ -68,10 +74,9 @@ class _FundPostPage2State extends State<FundPostPage2> {
             ),
             Form(
               child: TextFormField(
-                controller: goalController,
-                keyboardType: TextInputType.number,
+                controller: titleController,
+                keyboardType: TextInputType.text,
                 decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.attach_money, color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                     borderSide: BorderSide(color: Colors.grey, width: 2),
@@ -84,49 +89,61 @@ class _FundPostPage2State extends State<FundPostPage2> {
               ),
             ),
             Text(
-              "Keep in mind that transaction fees, including credit card and debit charges, are deducted from each donation",
+              "Tell your story",
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 20,
                 fontFamily: "Poppins",
                 fontWeight: FontWeight.w900,
-                color: Color(0xff767676),
+                color: Color(0xff333333),
               ),
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: Color(0xffE7F0F7),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "To recieve money raised, make sure the person withdrawing has:\n\nA US social security number\nA bank account and mailing address in one of the 50 states",
-                  style: TextStyle(
-                    color: Color(0xff333333),
-                    fontFamily: "Poppins",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+            Form(
+              child: TextFormField(
+                controller: descriptionController,
+                keyboardType: TextInputType.multiline,
+                maxLines: 12,
+                minLines: 8,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(color: Colors.grey, width: 2),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide(color: Color(0xff02A95C), width: 3),
                   ),
                 ),
               ),
             ),
             LongButton(
-              text: "Continue",
-              action: () {
-                if (goalController.text.isEmpty) {
+              text: "Launch",
+              action: () async {
+                if (descriptionController.text.isEmpty ||
+                    titleController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("You must set a donation goal"),
+                      content: Text(
+                        "You must create a title and add a description",
+                      ),
                       backgroundColor: Colors.red,
                       duration: Duration(seconds: 2),
                     ),
                   );
                 } else {
-                  donationData.setGoal(int.parse(goalController.text));
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FundPostPage3()),
+                  donationData.setDescription(descriptionController.text);
+                  donationData.setTitle(titleController.text);
+                  Map data = donationData.showDonationDetails();
+                  final userId = await storage.read(key: 'USER_ID');
+                  donationsService.createDonation(
+                    int.parse(userId.toString()),
+                    data['title'],
+                    data['goal'],
+                    data['description'],
+                    data['target'],
+                    data["image"],
                   );
+                  print(donationsService.getAllDonations());
+                  Navigator.popAndPushNamed(context, "/");
                 }
               },
             ),
