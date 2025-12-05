@@ -15,7 +15,7 @@ class MainScaffold extends StatefulWidget {
 }
 
 class _MainScaffoldState extends State<MainScaffold> {
-  List pages = [home(), FundPostPage1(), Login()];
+  List pages = [Home(), FundPostPage1(), Login()];
   int index = 0;
   bool isLoaded = false;
 
