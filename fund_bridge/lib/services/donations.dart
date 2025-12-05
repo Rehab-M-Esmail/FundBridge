@@ -10,7 +10,7 @@ class DonationsService {
     int goal,
     String description,
     String target,
-    File image,
+    String image,
   ) async {
     final db = await databaseService.database;
     return await db.insert(databaseService.donationsTable, {
@@ -29,7 +29,7 @@ class DonationsService {
     return result;
   }
 
-  Future deleteDonation(String donationId) async {
+  Future deleteDonation(int donationId) async {
     final db = await databaseService.database;
     return await db.delete(
       databaseService.donationsTable,

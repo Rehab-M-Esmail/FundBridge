@@ -16,14 +16,14 @@ class UserService {
     });
   }
 
-  Future<Map<String, dynamic>> getUserByEmail(String email) async {
+  Future<int> getUserByEmail(String email) async {
     final db = await databaseService.database;
     final result = await db.query(
       databaseService.userTable,
       where: "email = ?",
       whereArgs: [email],
     );
-    return result.isNotEmpty ? result.first : null;
+    return result.isNotEmpty ? result.first['id'] : null;
   }
 
   Future getAllUsers() async {

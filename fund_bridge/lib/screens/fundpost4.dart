@@ -1,5 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
+import 'package:fund_bridge/services/donations.dart';
+import 'package:provider/provider.dart';
 
 class FundPostPage4 extends StatefulWidget {
   const FundPostPage4({super.key});
@@ -9,8 +16,13 @@ class FundPostPage4 extends StatefulWidget {
 }
 
 class _FundPostPage4State extends State<FundPostPage4> {
+  TextEditingController titleController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
+  DonationsService donationsService = DonationsService();
+  final storage = FlutterSecureStorage();
   @override
   Widget build(BuildContext context) {
+    final donationData = Provider.of<DonationProvider>(context, listen: false);
     return Scaffold(
       body: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -62,6 +74,7 @@ class _FundPostPage4State extends State<FundPostPage4> {
             ),
             Form(
               child: TextFormField(
+                controller: titleController,
                 keyboardType: TextInputType.text,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
@@ -86,6 +99,7 @@ class _FundPostPage4State extends State<FundPostPage4> {
             ),
             Form(
               child: TextFormField(
+                controller: descriptionController,
                 keyboardType: TextInputType.multiline,
                 maxLines: 12,
                 minLines: 8,
@@ -101,7 +115,25 @@ class _FundPostPage4State extends State<FundPostPage4> {
                 ),
               ),
             ),
-            LongButton(text: "Continue", action: () {}),
+            LongButton(
+              text: "Launch",
+              action: () async {
+                donationData.setDescription(descriptionController.text);
+                donationData.setTitle(titleController.text);
+                Map data = donationData.showDonationDetails();
+                final userId = await storage.read(key: 'USER_ID');
+                donationsService.createDonation(
+                  int.parse(userId.toString()),
+                  data['title'],
+                  data['goal'],
+                  data['description'],
+                  data['target'],
+                  data["image"],
+                );
+                print(donationsService.getAllDonations());
+                Navigator.popAndPushNamed(context, "/");
+              },
+            ),
           ],
         ),
       ),

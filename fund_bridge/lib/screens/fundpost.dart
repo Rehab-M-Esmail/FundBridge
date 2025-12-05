@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
 import 'package:fund_bridge/screens/fundpost2.dart';
+import 'package:provider/provider.dart';
 
 class FundPostPage1 extends StatefulWidget {
   const FundPostPage1({super.key});
@@ -10,9 +12,13 @@ class FundPostPage1 extends StatefulWidget {
 }
 
 class _FundPostPage1State extends State<FundPostPage1> {
+  String donationTarget = '';
+
   @override
   List<bool> isChosen = [false, false, false];
   Widget build(BuildContext context) {
+    final donationData = Provider.of<DonationProvider>(context, listen: false);
+
     return Scaffold(
       body: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -54,6 +60,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                     isChosen[i] = i == 0 ? !isChosen[0] : false;
                   }
                 });
+                donationTarget = 'self-donation';
               },
               child: Column(
                 children: [
@@ -118,6 +125,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                     isChosen[i] = i == 1 ? !isChosen[1] : false;
                   }
                 });
+                donationTarget = 'for-someone';
               },
               child: Container(
                 width: MediaQuery.sizeOf(context).width,
@@ -175,6 +183,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                     isChosen[i] = i == 2 ? !isChosen[2] : false;
                   }
                 });
+                donationTarget = 'charity';
               },
               child: Container(
                 width: MediaQuery.sizeOf(context).width,
@@ -228,6 +237,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
             LongButton(
               text: "Continue",
               action: () {
+                donationData.setTarget(donationTarget);
                 Navigator.push(
                   context,
                   MaterialPageRoute(

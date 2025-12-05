@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
 import 'package:fund_bridge/screens/fundpost3.dart';
+import 'package:provider/provider.dart';
 
 class FundPostPage2 extends StatefulWidget {
   const FundPostPage2({super.key});
@@ -10,8 +12,11 @@ class FundPostPage2 extends StatefulWidget {
 }
 
 class _FundPostPage2State extends State<FundPostPage2> {
+  TextEditingController goalController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
+    final donationData = Provider.of<DonationProvider>(context, listen: false);
     return Scaffold(
       body: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -63,6 +68,7 @@ class _FundPostPage2State extends State<FundPostPage2> {
             ),
             Form(
               child: TextFormField(
+                controller: goalController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                   prefixIcon: Icon(Icons.attach_money, color: Colors.black),
@@ -107,6 +113,7 @@ class _FundPostPage2State extends State<FundPostPage2> {
             LongButton(
               text: "Continue",
               action: () {
+                donationData.setGoal(int.parse(goalController.text));
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => FundPostPage3()),

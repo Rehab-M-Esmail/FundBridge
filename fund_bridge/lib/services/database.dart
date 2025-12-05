@@ -23,7 +23,7 @@ class DatabaseService {
     final databasePath = join(databaseDirPath, "fundBridge.db");
     final database = await openDatabase(
       databasePath,
-      version: 6,
+      version: 7,
       onCreate: (db, version) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
@@ -55,7 +55,7 @@ class DatabaseService {
         donationGoal INTEGER,
         title TEXT,
         description TEXT,
-        image BLOB,
+        image TEXT,
         FOREIGN KEY (userId) REFERENCES user(id)
         )''');
   }

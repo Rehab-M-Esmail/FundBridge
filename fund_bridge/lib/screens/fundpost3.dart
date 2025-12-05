@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
 import 'package:fund_bridge/screens/fundpost4.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class FundPostPage3 extends StatefulWidget {
   const FundPostPage3({super.key});
@@ -14,9 +16,10 @@ class FundPostPage3 extends StatefulWidget {
 
 class _FundPostPage3State extends State<FundPostPage3> {
   File? image;
+  dynamic pickedFile;
   Future pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       print(pickedFile);
       setState(() {
@@ -27,6 +30,7 @@ class _FundPostPage3State extends State<FundPostPage3> {
 
   @override
   Widget build(BuildContext context) {
+    final donationData = Provider.of<DonationProvider>(context, listen: false);
     return Scaffold(
       body: Padding(
         padding: EdgeInsets.symmetric(
@@ -116,6 +120,7 @@ class _FundPostPage3State extends State<FundPostPage3> {
             LongButton(
               text: "Continue",
               action: () {
+                donationData.setImage(pickedFile.path!);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => FundPostPage4()),

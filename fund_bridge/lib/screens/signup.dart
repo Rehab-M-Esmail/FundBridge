@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import "package:flutter_secure_storage/flutter_secure_storage.dart";
 import "package:font_awesome_flutter/font_awesome_flutter.dart";
 import "package:fund_bridge/services/userService.dart";
 
@@ -16,6 +17,7 @@ class _SignupState extends State<Signup> {
   TextEditingController password = TextEditingController();
   bool isPasswordVisible = true;
   UserService userService = UserService();
+  final storage = FlutterSecureStorage();
 
   void toggleVisibility() {
     setState(() {
@@ -207,7 +209,7 @@ class _SignupState extends State<Signup> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: ElevatedButton(
-                  onPressed: () async{
+                  onPressed: () async {
                     if (formKey.currentState!.validate()) {
                       userService.createUser(
                         name.text,
@@ -215,6 +217,10 @@ class _SignupState extends State<Signup> {
                         password.text,
                       );
                       print(userService.getAllUsers());
+                      final userId = await userService.getUserByEmail(
+                        email.text,
+                      );
+                      await storage.write(key: 'USER_ID', value: userId.toString());
                       Navigator.pushNamed(context, "/");
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
