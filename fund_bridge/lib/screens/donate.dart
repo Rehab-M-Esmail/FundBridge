@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
+import 'package:fund_bridge/services/donations.dart';
 
 class donate extends StatefulWidget {
-  const donate({super.key});
+  final int? campaignId;
+  final Map<String, dynamic>? campaignData;
+  
+  const donate({super.key, this.campaignId, this.campaignData});
 
   @override
   State<donate> createState() => _donateState();
@@ -14,9 +18,84 @@ class _donateState extends State<donate> {
   String selectedCurrency = 'EGP';
   String selectedPayment = 'Debit Card';
   bool isAnonymous = false;
+  
+  Map<String, dynamic>? campaign;
+  int raisedAmount = 0;
+  bool isLoading = true;
+  final DonationsService donationsService = DonationsService();
+
+  @override
+  void initState() {
+    super.initState();
+    loadCampaignData();
+  }
+
+  Future<void> loadCampaignData() async {
+    if (widget.campaignData != null) {
+      setState(() {
+        campaign = widget.campaignData;
+        // Use current_amount from API data
+        raisedAmount = campaign!['currentAmount'] ?? 0;
+        isLoading = false;
+      });
+    } else if (widget.campaignId != null) {
+      final data = await donationsService.getDonationById(widget.campaignId!);
+      final raised = await donationsService.getTotalRaisedAmount(widget.campaignId!);
+      setState(() {
+        campaign = data;
+        raisedAmount = raised;
+        isLoading = false;
+      });
+    } else {
+      // Load default campaign or show error
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> loadRaisedAmount() async {
+    if (campaign != null && campaign!['id'] != null) {
+      final raised = await donationsService.getTotalRaisedAmount(campaign!['id']);
+      setState(() {
+        raisedAmount = raised;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xff008748)),
+        ),
+      );
+    }
+
+    if (campaign == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 60, color: Color(0xff767676)),
+              SizedBox(height: 20),
+              Text(
+                "No campaign selected",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: "Roboto",
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff333333),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -51,16 +130,32 @@ class _donateState extends State<donate> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Image(
-                    image: AssetImage("../imgs/rural_areas.jpg"),
-                    fit: BoxFit.cover,
-                    width: MediaQuery.of(context).size.width,
-                  ),
+                  child: campaign!['image'] != null && campaign!['image'] != ''
+                      ? Image.network(
+                          campaign!['image'],
+                          fit: BoxFit.cover,
+                          width: MediaQuery.of(context).size.width,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(Icons.image, size: 60, color: Color(0xff767676));
+                          },
+                        )
+                      : Icon(Icons.image, size: 60, color: Color(0xff767676)),
                 ),
               ),
               SizedBox(height: 15),
               Text(
-                "Help Build a School",
+                campaign!['title'] ?? "Campaign Title",
                 style: TextStyle(
                   fontSize: 24,
                   fontFamily: "Roboto",
@@ -79,7 +174,7 @@ class _donateState extends State<donate> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Raised: \$25,000",
+                      "Raised: \$${raisedAmount.toString()}",
                       style: TextStyle(
                         fontSize: 16,
                         fontFamily: "Roboto",
@@ -88,7 +183,7 @@ class _donateState extends State<donate> {
                       ),
                     ),
                     Text(
-                      "Goal: \$50,000",
+                      "Goal: \$${campaign!['donationGoal']?.toString() ?? '0'}",
                       style: TextStyle(
                         fontSize: 16,
                         fontFamily: "Roboto",
@@ -101,7 +196,7 @@ class _donateState extends State<donate> {
               ),
               SizedBox(height: 15),
               Text(
-                "Building a school for children in rural areas to provide better education opportunities.",
+                campaign!['description'] ?? "No description available.",
                 style: TextStyle(
                   fontSize: 14,
                   fontFamily: "Roboto",
@@ -224,8 +319,73 @@ class _donateState extends State<donate> {
               SizedBox(height: 30),
               LongButton(
                 text: "Donate",
-                action: () {
-                  // Donation logic here
+                action: () async {
+                  if (amountController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Please enter donation amount'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  double amount = double.tryParse(amountController.text) ?? 0;
+                  if (amount <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Please enter valid amount'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
+
+                  try {
+                    // Save donation (using userId 1 as placeholder, should come from auth)
+                    await donationsService.saveDonation(
+                      campaignId: campaign!['id'],
+                      donorId: 1, // TODO: Get from user session/auth
+                      amount: amount,
+                      currency: selectedCurrency,
+                      paymentMethod: selectedPayment,
+                      isAnonymous: isAnonymous,
+                      comment: commentController.text,
+                    );
+
+                    // Refresh raised amount
+                    await loadRaisedAmount();
+
+                    // Show success message
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text('Success!'),
+                        content: Text('Thank you for your donation of $amount $selectedCurrency!'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              // Clear form
+                              amountController.clear();
+                              commentController.clear();
+                              setState(() {
+                                isAnonymous = false;
+                              });
+                            },
+                            child: Text('OK'),
+                          ),
+                        ],
+                      ),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error processing donation: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
               ),
             ],

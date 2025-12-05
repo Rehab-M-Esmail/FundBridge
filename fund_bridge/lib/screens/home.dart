@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../common_appbar.dart';
 import '../models/funding.dart';
+import 'package:fund_bridge/screens/donate.dart';
 
 class SearchBar extends StatelessWidget implements PreferredSizeWidget {
   const SearchBar({super.key});
@@ -48,7 +49,7 @@ class _HomeState extends State<Home> {
 
   Future<List<Funding>> fetchFundings() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/fundings'),
+      Uri.parse('http://localhost:8000/api/fundings'),
     );
 
     if (response.statusCode == 200) {
@@ -140,6 +141,26 @@ class _HomeState extends State<Home> {
                             "\$${fund.fundingAmount}",
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
+                          onTap: () {
+                            // Navigate to donate page with campaign data
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => donate(
+                                  campaignData: {
+                                    'id': fund.id,
+                                    'title': fund.title,
+                                    'description': fund.description,
+                                    'donationGoal': fund.fundingAmount,
+                                    'currentAmount': fund.currentAmount,
+                                    'image': fund.image,
+                                    'author': fund.author,
+                                    'category': fund.category,
+                                  },
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       );
                     },
