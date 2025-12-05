@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../common_appbar.dart';
@@ -67,10 +68,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const CommonAppBar(title: 'FundBridge'),
-        bottom: const SearchBar(),
-      ),
       body: FutureBuilder<List<Funding>>(
         future: fundings,
         builder: (context, snapshot) {
@@ -83,51 +80,76 @@ class _HomeState extends State<Home> {
 
           final items = snapshot.data!;
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: items.length,
-            itemBuilder: (context, index) {
-              final fund = items[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      fund.image,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const CircleAvatar(
-                          backgroundColor: Colors.indigoAccent,
-                          child: Icon(Icons.trending_up, color: Colors.white),
-                        );
-                      },
-                    ),
-                  ),
-                  title: Text(fund.title),
-                  subtitle: Text(fund.author),
-                  trailing: Text(
-                    "\$${fund.fundingAmount}",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image(
+                  height: MediaQuery.of(context).size.height * 0.05,
+                  image: AssetImage("imgs/logo.png"),
+                ),
+                Text(
+                  "Search",
+                  style: TextStyle(
+                    fontSize: 27,
+                    fontFamily: "Poppins",
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xff333333),
                   ),
                 ),
-              );
-            },
+                CupertinoSearchTextField(),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final fund = items[index];
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 15),
+                        child: ListTile(
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: Image.network(
+                              fund.image,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const CircleAvatar(
+                                  backgroundColor: Colors.indigoAccent,
+                                  child: Icon(
+                                    Icons.trending_up,
+                                    color: Colors.white,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          title: Text(
+                            fund.title,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: "Poppins",
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xff333333),
+                            ),
+                          ),
+                          subtitle: Text(fund.author),
+                          trailing: Text(
+                            "\$${fund.fundingAmount}",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
     );
   }
-}
-
-void main() {
-  runApp(
-    const MaterialApp(
-      title: 'FundBridge App',
-      debugShowCheckedModeBanner: false,
-      home: Home(),
-    ),
-  );
 }

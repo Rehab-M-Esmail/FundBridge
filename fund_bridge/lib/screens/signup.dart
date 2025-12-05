@@ -220,7 +220,10 @@ class _SignupState extends State<Signup> {
                       final userId = await userService.getUserByEmail(
                         email.text,
                       );
-                      await storage.write(key: 'USER_ID', value: userId.toString());
+                      await storage.write(
+                        key: 'USER_ID',
+                        value: userId.toString(),
+                      );
                       Navigator.pushNamed(context, "/");
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(

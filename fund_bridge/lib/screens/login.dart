@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:fund_bridge/services/userService.dart';
 import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
@@ -15,7 +16,9 @@ class _LoginState extends State<Login> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   bool isPasswordVisible = true;
-  String? loginStatus = null;
+  String? loginStatus;
+  UserService userService = UserService();
+
   void toggleVisibility() {
     setState(() {
       isPasswordVisible = !isPasswordVisible;
@@ -165,7 +168,23 @@ class _LoginState extends State<Login> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    final user = await userService.userLogin(
+                      email.text,
+                      password.text,
+                    );
+                    if (user != null) {
+                      Navigator.pushNamed(context, "/");
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("User does not exist"),
+                          backgroundColor: Colors.red,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     shadowColor: Colors.transparent,

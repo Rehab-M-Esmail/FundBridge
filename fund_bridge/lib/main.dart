@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(
           create: (context) {
-          return DonationProvider();
+            return DonationProvider();
           },
         ),
       ],
