@@ -36,7 +36,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
               image: AssetImage("imgs/logo.png"),
             ),
             Text(
-              "1 of 5",
+              "1 of 4",
               style: TextStyle(
                 fontSize: 15,
                 fontFamily: "Poppins",
@@ -104,8 +104,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                                 " for your own use",
                                 style: TextStyle(
                                   fontFamily: "Poppins",
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 14,
                                   color: Color(0xff333333),
                                 ),
                               ),
@@ -164,8 +164,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                             "You will recieve a beneficiary to \nrecieve funds or distribute them",
                             style: TextStyle(
                               fontFamily: "Poppins",
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
                               color: Color(0xff333333),
                             ),
                           ),
@@ -222,8 +222,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                             "Funds are delivered to your \nchosen nonprofit for you",
                             style: TextStyle(
                               fontFamily: "Poppins",
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15,
+                              fontWeight: FontWeight.w400,
+                              fontSize: 14,
                               color: Color(0xff333333),
                             ),
                           ),
@@ -237,13 +237,23 @@ class _FundPostPage1State extends State<FundPostPage1> {
             LongButton(
               text: "Continue",
               action: () {
-                donationData.setTarget(donationTarget);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const FundPostPage2(),
-                  ),
-                );
+                if (donationTarget == '') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("You must pick a donation target"),
+                      backgroundColor: Colors.red,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  donationData.setTarget(donationTarget);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const FundPostPage2(),
+                    ),
+                  );
+                }
               },
             ),
           ],

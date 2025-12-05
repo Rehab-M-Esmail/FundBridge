@@ -46,7 +46,7 @@ class _FundPostPage3State extends State<FundPostPage3> {
             ),
             SizedBox(height: 25),
             Text(
-              "3 of 5",
+              "3 of 4",
               style: TextStyle(
                 fontSize: 15,
                 fontFamily: "Poppins",
@@ -99,32 +99,27 @@ class _FundPostPage3State extends State<FundPostPage3> {
                           ),
                         ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            color: Color(0xff0D4715),
-                            onPressed: () {},
-                            icon: Icon(Icons.edit),
-                          ),
-                          IconButton(
-                            color: Color(0xff0D4715),
-                            onPressed: () {},
-                            icon: Icon(Icons.delete),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
             Spacer(),
             LongButton(
               text: "Continue",
               action: () {
-                donationData.setImage(pickedFile.path!);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FundPostPage4()),
-                );
+                if (image == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("You must pick a fundraiser cover picture"),
+                      backgroundColor: Colors.red,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  donationData.setImage(pickedFile.path!);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FundPostPage4()),
+                  );
+                }
               },
             ),
           ],

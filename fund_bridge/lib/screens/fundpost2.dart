@@ -34,7 +34,7 @@ class _FundPostPage2State extends State<FundPostPage2> {
               image: AssetImage("imgs/logo.png"),
             ),
             Text(
-              "2 of 5",
+              "2 of 4",
               style: TextStyle(
                 fontSize: 15,
                 fontFamily: "Poppins",
@@ -113,11 +113,21 @@ class _FundPostPage2State extends State<FundPostPage2> {
             LongButton(
               text: "Continue",
               action: () {
-                donationData.setGoal(int.parse(goalController.text));
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => FundPostPage3()),
-                );
+                if (goalController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("You must set a donation goal"),
+                      backgroundColor: Colors.red,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  donationData.setGoal(int.parse(goalController.text));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FundPostPage3()),
+                  );
+                }
               },
             ),
           ],

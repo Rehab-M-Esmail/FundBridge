@@ -40,7 +40,7 @@ class _FundPostPage4State extends State<FundPostPage4> {
               image: AssetImage("imgs/logo.png"),
             ),
             Text(
-              "4 of 5",
+              "4 of 4",
               style: TextStyle(
                 fontSize: 15,
                 fontFamily: "Poppins",
@@ -118,20 +118,33 @@ class _FundPostPage4State extends State<FundPostPage4> {
             LongButton(
               text: "Launch",
               action: () async {
-                donationData.setDescription(descriptionController.text);
-                donationData.setTitle(titleController.text);
-                Map data = donationData.showDonationDetails();
-                final userId = await storage.read(key: 'USER_ID');
-                donationsService.createDonation(
-                  int.parse(userId.toString()),
-                  data['title'],
-                  data['goal'],
-                  data['description'],
-                  data['target'],
-                  data["image"],
-                );
-                print(donationsService.getAllDonations());
-                Navigator.popAndPushNamed(context, "/");
+                if (descriptionController.text.isEmpty ||
+                    titleController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        "You must create a title and add a description",
+                      ),
+                      backgroundColor: Colors.red,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                } else {
+                  donationData.setDescription(descriptionController.text);
+                  donationData.setTitle(titleController.text);
+                  Map data = donationData.showDonationDetails();
+                  final userId = await storage.read(key: 'USER_ID');
+                  donationsService.createDonation(
+                    int.parse(userId.toString()),
+                    data['title'],
+                    data['goal'],
+                    data['description'],
+                    data['target'],
+                    data["image"],
+                  );
+                  print(donationsService.getAllDonations());
+                  Navigator.popAndPushNamed(context, "/");
+                }
               },
             ),
           ],
