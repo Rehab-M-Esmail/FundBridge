@@ -9,9 +9,7 @@ import 'package:fund_bridge/screens/signup.dart';
 void main() {
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => FundPostProvider()),
-      ],
+      providers: [ChangeNotifierProvider(create: (_) => FundPostProvider())],
       child: const MyApp(),
     ),
   );
