@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../common_appbar.dart';
 import '../models/funding.dart';
 
 class SearchBar extends StatelessWidget implements PreferredSizeWidget {

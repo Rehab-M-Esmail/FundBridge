@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/fund_post_provider.dart';
 import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/screens/login.dart';
 import 'package:fund_bridge/screens/main_scaffold.dart';
 import 'package:fund_bridge/screens/signup.dart';
-import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FundPostProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

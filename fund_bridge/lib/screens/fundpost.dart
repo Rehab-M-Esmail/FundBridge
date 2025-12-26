@@ -237,7 +237,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
             LongButton(
               text: "Continue",
               action: () {
-                if (donationTarget == '') {
+                if (donationTarget.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("You must pick a donation target"),
