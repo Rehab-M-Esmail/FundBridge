@@ -250,42 +250,73 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child:
-                          campaign!['image'] != null && campaign!['image'] != ''
-                          ? Image.network(
-                              campaign!['image'],
+                      child: Builder(
+                        builder: (context) {
+                          final raw = campaign?['image']?.toString() ?? '';
+                          final imagePathOrUrl = raw.trim();
+
+                          if (imagePathOrUrl.isEmpty) {
+                            return const Icon(
+                              Icons.image,
+                              size: 60,
+                              color: Color(0xff767676),
+                            );
+                          }
+
+                          final isRemote = imagePathOrUrl.startsWith('http://') ||
+                              imagePathOrUrl.startsWith('https://');
+
+                          if (isRemote) {
+                            return Image.network(
+                              imagePathOrUrl,
                               fit: BoxFit.cover,
                               width: MediaQuery.of(context).size.width,
                               loadingBuilder:
                                   (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value:
-                                            loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                            : null,
-                                      ),
-                                    );
-                                  },
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
                               errorBuilder: (context, error, stackTrace) {
-                                return Icon(
+                                return const Icon(
                                   Icons.image,
                                   size: 60,
                                   color: Color(0xff767676),
                                 );
                               },
-                            )
-                          : Icon(
+                            );
+                          }
+
+                          final file = File(imagePathOrUrl);
+                          if (!file.existsSync()) {
+                            return const Icon(
                               Icons.image,
                               size: 60,
                               color: Color(0xff767676),
-                            ),
+                            );
+                          }
+
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.image,
+                                size: 60,
+                                color: Color(0xff767676),
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
