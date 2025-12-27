@@ -4,6 +4,9 @@ import 'package:fund_bridge/reusable-widgets/longButton.dart';
 import 'package:fund_bridge/screens/donate.dart';
 import 'package:fund_bridge/services/donations.dart';
 import 'package:fund_bridge/services/userService.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -16,6 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final storage = FlutterSecureStorage();
   final UserService userService = UserService();
   final DonationsService donationsService = DonationsService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   Future<Map<String, dynamic>?>? _userFuture;
   Future<List<Map<String, dynamic>>>? _campaignsFuture;
@@ -55,6 +59,40 @@ class _ProfilePageState extends State<ProfilePage> {
     await storage.delete(key: 'USER_ID');
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+  }
+
+  Future<void> _pickAndSaveProfileImage() async {
+    final userId = await _getUserId();
+    if (userId == null) return;
+
+    final picked = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+
+    final dir = await getApplicationDocumentsDirectory();
+    final profileDir = Directory('${dir.path}${Platform.pathSeparator}profile');
+    if (!await profileDir.exists()) {
+      await profileDir.create(recursive: true);
+    }
+
+    final extension = picked.path.contains('.')
+        ? picked.path.substring(picked.path.lastIndexOf('.'))
+        : '.jpg';
+    final destPath =
+        '${profileDir.path}${Platform.pathSeparator}user_${userId}$extension';
+
+    final savedFile = await File(picked.path).copy(destPath);
+    await userService.updateProfileImage(
+      userId: userId,
+      profileImagePath: savedFile.path,
+    );
+
+    if (!mounted) return;
+    setState(() {
+      _reload();
+    });
   }
 
   @override
@@ -124,6 +162,11 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 final name = user['name']?.toString() ?? '';
                 final email = user['email']?.toString() ?? '';
+                final profileImagePath = user['profileImage']?.toString();
+
+                final hasProfileImage = profileImagePath != null &&
+                    profileImagePath.isNotEmpty &&
+                    File(profileImagePath).existsSync();
 
                 return Container(
                   width: double.infinity,
@@ -134,10 +177,38 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: const Color(0xffE8F3EC),
-                        child: Icon(Icons.person, color: Color(0xff0D4715)),
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundColor: const Color(0xffE8F3EC),
+                            backgroundImage: hasProfileImage
+                                ? FileImage(File(profileImagePath!))
+                                : null,
+                            child: hasProfileImage
+                                ? null
+                                : Icon(Icons.person, color: Color(0xff0D4715)),
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: InkWell(
+                              onTap: _pickAndSaveProfileImage,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xff008748),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.all(4),
+                                child: const Icon(
+                                  Icons.edit,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(width: 14),
                       Expanded(

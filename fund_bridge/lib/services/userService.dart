@@ -49,6 +49,21 @@ class UserService {
     return result.isNotEmpty ? result.first['id'] : null;
   }
 
+  Future<int> updateProfileImage({
+    required int userId,
+    required String profileImagePath,
+  }) async {
+    final db = await databaseService.database;
+    return await db.update(
+      databaseService.userTable,
+      {
+        'profileImage': profileImagePath,
+      },
+      where: 'id = ?',
+      whereArgs: [userId],
+    );
+  }
+
   Future getAllUsers() async {
     final db = await databaseService.database;
     final result = await db.query(databaseService.userTable);

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
 import 'package:fund_bridge/services/donations.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:fund_bridge/services/userService.dart';
+import 'dart:io';
 
 class donate extends StatefulWidget {
   final int? campaignId;
@@ -17,6 +20,10 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
   TextEditingController commentController = TextEditingController();
   String selectedPayment = 'Debit Card';
   bool isAnonymous = false;
+
+  final FlutterSecureStorage storage = FlutterSecureStorage();
+  final UserService userService = UserService();
+  Future<Map<String, dynamic>?>? _userFuture;
 
   Map<String, dynamic>? campaign;
   int raisedAmount = 0;
@@ -37,7 +44,20 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
       parent: _contentController,
       curve: Curves.easeOut,
     );
+    _userFuture = _loadCurrentUser();
     loadCampaignData();
+  }
+
+  Future<int?> _getUserId() async {
+    final value = await storage.read(key: 'USER_ID');
+    if (value == null) return null;
+    return int.tryParse(value);
+  }
+
+  Future<Map<String, dynamic>?> _loadCurrentUser() async {
+    final userId = await _getUserId();
+    if (userId == null) return null;
+    return await userService.getUserById(userId);
   }
 
   @override
@@ -139,10 +159,28 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                 Center(
                   child: ScaleTransition(
                     scale: _contentAnimation,
-                    child: CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Color(0xff008748),
-                      child: Icon(Icons.person, size: 40, color: Colors.white),
+                    child: FutureBuilder<Map<String, dynamic>?>(
+                      future: _userFuture,
+                      builder: (context, snapshot) {
+                        final user = snapshot.data;
+                        final profileImagePath = user?['profileImage']?.toString();
+                        final hasProfileImage = profileImagePath != null &&
+                            profileImagePath.isNotEmpty &&
+                            File(profileImagePath).existsSync();
+
+                        final profileImageFile =
+                            hasProfileImage ? File(profileImagePath!) : null;
+
+                        return CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Color(0xff008748),
+                          backgroundImage:
+                              profileImageFile != null ? FileImage(profileImageFile) : null,
+                          child: hasProfileImage
+                              ? null
+                              : Icon(Icons.person, size: 40, color: Colors.white),
+                        );
+                      },
                     ),
                   ),
                 ),
