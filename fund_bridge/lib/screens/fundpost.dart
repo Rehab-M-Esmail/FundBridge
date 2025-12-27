@@ -80,42 +80,45 @@ class _FundPostPage1State extends State<FundPostPage1> {
                           width: isChosen[0] ? 2 : 1,
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Image(
-                              height: MediaQuery.of(context).size.height * 0.13,
-                              image: AssetImage("imgs/Frame.png"),
-                            ),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Yourself",
-                                  style: TextStyle(
-                                    fontFamily: "Poppins",
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 20,
-                                    color: Color(0xff333333),
+                      child: Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              Image(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.13,
+                                image: AssetImage("imgs/Frame.png"),
+                              ),
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Yourself",
+                                    style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 20,
+                                      color: Color(0xff333333),
+                                    ),
                                   ),
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "Funds are delivered to your \nbank account"
-                                  " for your own use",
-                                  style: TextStyle(
-                                    fontFamily: "Poppins",
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 14,
-                                    color: Color(0xff333333),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    "Funds are delivered to your \nbank account"
+                                    " for your own use",
+                                    style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      fontWeight: FontWeight.w400,
+                                      fontSize: 14,
+                                      color: Color(0xff333333),
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ],
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -144,41 +147,43 @@ class _FundPostPage1State extends State<FundPostPage1> {
                       width: isChosen[1] ? 2 : 1,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(7),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Image(
-                          height: MediaQuery.of(context).size.height * 0.13,
-                          image: AssetImage("imgs/hug.png"),
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Someone else",
-                              style: TextStyle(
-                                fontFamily: "Poppins",
-                                fontWeight: FontWeight.w800,
-                                fontSize: 20,
-                                color: Color(0xff333333),
+                  child: Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(7),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Image(
+                            height: MediaQuery.of(context).size.height * 0.13,
+                            image: AssetImage("imgs/hug.png"),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Someone else",
+                                style: TextStyle(
+                                  fontFamily: "Poppins",
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                  color: Color(0xff333333),
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "You will recieve a beneficiary to \nrecieve funds or distribute them",
-                              style: TextStyle(
-                                fontFamily: "Poppins",
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                                color: Color(0xff333333),
+                              SizedBox(height: 10),
+                              Text(
+                                "You will recieve a beneficiary to \nrecieve funds or distribute them",
+                                style: TextStyle(
+                                  fontFamily: "Poppins",
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 14,
+                                  color: Color(0xff333333),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -205,41 +210,43 @@ class _FundPostPage1State extends State<FundPostPage1> {
                       width: isChosen[2] ? 2 : 1,
                     ),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Image(
-                          height: MediaQuery.of(context).size.height * 0.13,
-                          image: AssetImage("imgs/charity.png"),
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Charity",
-                              style: TextStyle(
-                                fontFamily: "Poppins",
-                                fontWeight: FontWeight.w800,
-                                fontSize: 20,
-                                color: Color(0xff333333),
+                  child: Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Image(
+                            height: MediaQuery.of(context).size.height * 0.13,
+                            image: AssetImage("imgs/charity.png"),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Charity",
+                                style: TextStyle(
+                                  fontFamily: "Poppins",
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                  color: Color(0xff333333),
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 10),
-                            Text(
-                              "Funds are delivered to your \nchosen nonprofit for you",
-                              style: TextStyle(
-                                fontFamily: "Poppins",
-                                fontWeight: FontWeight.w400,
-                                fontSize: 14,
-                                color: Color(0xff333333),
+                              SizedBox(height: 10),
+                              Text(
+                                "Funds are delivered to your \nchosen nonprofit for you",
+                                style: TextStyle(
+                                  fontFamily: "Poppins",
+                                  fontWeight: FontWeight.w400,
+                                  fontSize: 14,
+                                  color: Color(0xff333333),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
