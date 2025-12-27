@@ -118,6 +118,54 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
     }
   }
 
+  bool _isRemoteUrl(String value) {
+    final v = value.toLowerCase();
+    return v.startsWith('http://') || v.startsWith('https://');
+  }
+
+  Widget _buildCampaignImage() {
+    final imageValue = campaign?['image']?.toString();
+    if (imageValue == null || imageValue.trim().isEmpty) {
+      return Icon(Icons.image, size: 60, color: Color(0xff767676));
+    }
+
+    if (_isRemoteUrl(imageValue)) {
+      return Image.network(
+        imageValue,
+        fit: BoxFit.cover,
+        width: MediaQuery.of(context).size.width,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Center(
+            child: CircularProgressIndicator(
+              value: loadingProgress.expectedTotalBytes != null
+                  ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                  : null,
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(Icons.image, size: 60, color: Color(0xff767676));
+        },
+      );
+    }
+
+    final file = File(imageValue);
+    if (!file.existsSync()) {
+      return Icon(Icons.image, size: 60, color: Color(0xff767676));
+    }
+
+    return Image.file(
+      file,
+      fit: BoxFit.cover,
+      width: MediaQuery.of(context).size.width,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(Icons.image, size: 60, color: Color(0xff767676));
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -220,30 +268,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: campaign!['image'] != null &&
-                              campaign!['image'] != ''
-                          ? Image.network(
-                              campaign!['image'],
-                              fit: BoxFit.cover,
-                              width: MediaQuery.of(context).size.width,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.image,
-                                    size: 60, color: Color(0xff767676));
-                              },
-                            )
-                          : Icon(Icons.image, size: 60, color: Color(0xff767676)),
+                      child: _buildCampaignImage(),
                     ),
                   ),
                 ),

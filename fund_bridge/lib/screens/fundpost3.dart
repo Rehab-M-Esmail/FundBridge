@@ -5,6 +5,7 @@ import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
 import 'package:fund_bridge/screens/fundpost4.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 class FundPostPage3 extends StatefulWidget {
@@ -16,14 +17,35 @@ class FundPostPage3 extends StatefulWidget {
 
 class _FundPostPage3State extends State<FundPostPage3> {
   File? image;
-  dynamic pickedFile;
+  XFile? pickedFile;
+  String? persistedImagePath;
+
+  Future<String> _persistFundraiserImage(String sourcePath) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final fundraiserDir =
+        Directory('${dir.path}${Platform.pathSeparator}fundraisers');
+    if (!await fundraiserDir.exists()) {
+      await fundraiserDir.create(recursive: true);
+    }
+
+    final extension = sourcePath.contains('.')
+        ? sourcePath.substring(sourcePath.lastIndexOf('.'))
+        : '.jpg';
+    final destPath =
+        '${fundraiserDir.path}${Platform.pathSeparator}fundraiser_${DateTime.now().millisecondsSinceEpoch}$extension';
+    final savedFile = await File(sourcePath).copy(destPath);
+    return savedFile.path;
+  }
+
   Future pickImage() async {
     final picker = ImagePicker();
     pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       print(pickedFile);
+      final savedPath = await _persistFundraiserImage(pickedFile!.path);
       setState(() {
-        image = File(pickedFile.path);
+        persistedImagePath = savedPath;
+        image = File(savedPath);
       });
     }
   }
@@ -121,7 +143,7 @@ class _FundPostPage3State extends State<FundPostPage3> {
                       ),
                     );
                   } else {
-                    donationData.setImage(pickedFile.path!);
+                    donationData.setImage(persistedImagePath!);
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => FundPostPage4()),

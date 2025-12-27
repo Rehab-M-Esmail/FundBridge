@@ -48,7 +48,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Future<List<Funding>> fetchFundings() async {
     final response = await http.get(
-      Uri.parse('http://192.168.1.4:8000/api/fundings'),
+      Uri.parse('http://10.30.190.133:8000/api/fundings'),
     );
 
     if (response.statusCode == 200) {
