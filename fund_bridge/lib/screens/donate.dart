@@ -15,6 +15,12 @@ class _DonatePageState extends State<DonatePage> {
   final TextEditingController _donationController = TextEditingController();
 
   @override
+  void dispose() {
+    _donationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final provider = Provider.of<FundPostProvider>(context);
     final post = provider.fundPost;
@@ -103,7 +109,10 @@ class _DonatePageState extends State<DonatePage> {
             const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              child: LongButton(text: 'Donate Now', action: () {}),
+              child: LongButton(
+                text: 'Donate Now',
+                action: () => _handleDonation(provider),
+              ),
             ),
             const SizedBox(height: 20),
 

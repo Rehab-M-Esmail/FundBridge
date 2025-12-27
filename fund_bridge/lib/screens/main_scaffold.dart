@@ -7,7 +7,6 @@ import 'package:fund_bridge/screens/home.dart';
 import 'package:fund_bridge/screens/fundpost.dart';
 import 'package:fund_bridge/screens/login.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:fund_bridge/screens/donate.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -17,7 +16,7 @@ class MainScaffold extends StatefulWidget {
 }
 
 class _MainScaffoldState extends State<MainScaffold> {
-  List pages = [Home(), FundPostPage1(), Login()];
+  List<Widget> pages = [Home(), FundPostPage1(), Login()];
   int index = 0;
   bool isLoaded = false;
   final storage = FlutterSecureStorage();
@@ -28,8 +27,9 @@ class _MainScaffoldState extends State<MainScaffold> {
     });
   }
 
-  void loadUser() async {
+  Future<void> loadUser() async {
     final userId = await storage.read(key: 'USER_ID');
+    if (!mounted) return;
     setState(() {
       final isLoggedIn = userId != null && userId.isNotEmpty && userId != 'null';
       if (isLoggedIn) {
@@ -37,13 +37,13 @@ class _MainScaffoldState extends State<MainScaffold> {
       } else {
         pages = [Home(), FundPostPage1(), Login()];
       }
+      isLoaded = true;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    isLoaded = true;
     loadUser();
   }
 
