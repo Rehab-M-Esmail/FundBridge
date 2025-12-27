@@ -70,12 +70,12 @@
     "author": "ReliefWorks Global",
     "description": "Severe floods have destroyed hundreds of homes. This fund will help provide building materials, temporary shelters, and essential supplies.",
     "goal_amount": 60000,
-    "current_amount": 28400,
+    "current_amount": 28500,
     "image": "https://images.pexels.com/photos/3044475/pexels-photo-3044475.jpeg",
     "category": "Disaster Relief",
     "location": "Lagos, Nigeria",
     "created_at": "2024-07-19",
-    "supporters_count": 264
+    "supporters_count": 265
   },
   {
     "id": 7,
@@ -161,12 +161,12 @@
     "author": "CraftVillage Org",
     "description": "Support handmade crafts, pottery, and traditional weaving by funding raw materials and marketing opportunities.",
     "goal_amount": 22000,
-    "current_amount": 8800,
+    "current_amount": 8900,
     "image": "https://images.pexels.com/photos/461428/pexels-photo-461428.jpeg",
     "category": "Community",
     "location": "Fes, Morocco",
     "created_at": "2024-10-14",
-    "supporters_count": 112
+    "supporters_count": 113
   },
   {
     "id": 14,

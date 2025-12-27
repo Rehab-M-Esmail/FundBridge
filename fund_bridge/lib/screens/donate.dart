@@ -551,7 +551,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                       // 3. Call API to update server
                       try {
                         final apiUrl = Uri.parse(
-                          'http://10.0.2.2:8000/api/fundings',
+                          'http://192.168.1.4:8000/api/fundings',
                         );
                         final response = await http.patch(
                           apiUrl,

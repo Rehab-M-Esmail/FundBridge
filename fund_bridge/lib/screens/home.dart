@@ -46,9 +46,12 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late Future<List<Funding>> fundings;
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = "";
+
   Future<List<Funding>> fetchFundings() async {
     final response = await http.get(
-      Uri.parse('http://10.0.2.2:8000/api/fundings'),
+      Uri.parse('http://192.168.1.4:8000/api/fundings'),
     );
 
     if (response.statusCode == 200) {
@@ -65,7 +68,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     fundings = fetchFundings();
   }
 
-  // --- NEW METHOD TO REFRESH DATA ---
   void _refreshData() {
     setState(() {
       fundings = fetchFundings();
@@ -85,7 +87,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             return Center(child: Text("Error: ${snapshot.error}"));
           }
 
+          // original list from API
           final items = snapshot.data!;
+
+
+          final filteredItems = items.where((fund) {
+            final q = _searchQuery.toLowerCase();
+            return fund.title.toLowerCase().contains(q) ||
+                fund.author.toLowerCase().contains(q) ||
+                fund.category.toLowerCase().contains(q);
+          }).toList();
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
@@ -109,13 +120,25 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                     color: Color(0xff333333),
                   ),
                 ),
-                CupertinoSearchTextField(),
+
+                CupertinoSearchTextField(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                  placeholder: "Search funds, companies, or keywords...",
+                ),
+
                 const SizedBox(height: 10),
+
                 Expanded(
                   child: ListView.builder(
-                    itemCount: items.length,
+                    itemCount: filteredItems.length,
                     itemBuilder: (context, index) {
-                      final fund = items[index];
+                      final fund = filteredItems[index];
+
                       return TweenAnimationBuilder<double>(
                         tween: Tween(begin: 0.0, end: 1.0),
                         duration: Duration(milliseconds: 400 + (index * 100)),
@@ -174,23 +197,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                               ),
                             ),
                             onTap: () async {
-                              // <-- 1. Made async
                               await Navigator.push(
-                                // <-- 2. Added await
                                 context,
                                 PageRouteBuilder(
-                                  transitionDuration: const Duration(
-                                    milliseconds: 500,
-                                  ),
-                                  reverseTransitionDuration: const Duration(
-                                    milliseconds: 500,
-                                  ),
-                                  pageBuilder:
-                                      (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                      ) => donate(
+                                  transitionDuration:
+                                  const Duration(milliseconds: 500),
+                                  reverseTransitionDuration:
+                                  const Duration(milliseconds: 500),
+                                  pageBuilder: (context, animation,
+                                      secondaryAnimation) =>
+                                      donate(
                                         campaignData: {
                                           'id': fund.id,
                                           'title': fund.title,
@@ -202,21 +218,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                           'category': fund.category,
                                         },
                                       ),
-                                  transitionsBuilder:
-                                      (
-                                        context,
-                                        animation,
-                                        secondaryAnimation,
-                                        child,
-                                      ) {
-                                        return FadeTransition(
-                                          opacity: animation,
-                                          child: child,
-                                        );
-                                      },
+                                  transitionsBuilder: (context, animation,
+                                      secondaryAnimation, child) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
                                 ),
                               );
-                              // <-- 3. Refresh data when back
+
                               _refreshData();
                             },
                           ),
@@ -233,3 +244,4 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     );
   }
 }
+
