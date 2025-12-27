@@ -1,232 +1,433 @@
 import 'package:flutter/material.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
-import 'package:provider/provider.dart';
-import '../providers/fund_post_provider.dart';
-import '../models/fund_post.dart';
+import 'package:fund_bridge/services/donations.dart';
 
-class DonatePage extends StatefulWidget {
-  const DonatePage({Key? key}) : super(key: key);
+class donate extends StatefulWidget {
+  final int? campaignId;
+  final Map<String, dynamic>? campaignData;
+
+  const donate({super.key, this.campaignId, this.campaignData});
 
   @override
-  State<DonatePage> createState() => _DonatePageState();
+  State<donate> createState() => _donateState();
 }
 
-class _DonatePageState extends State<DonatePage> {
-  final TextEditingController _donationController = TextEditingController();
+class _donateState extends State<donate> with TickerProviderStateMixin {
+  TextEditingController amountController = TextEditingController();
+  TextEditingController commentController = TextEditingController();
+  String selectedPayment = 'Debit Card';
+  bool isAnonymous = false;
+
+  Map<String, dynamic>? campaign;
+  int raisedAmount = 0;
+  bool isLoading = true;
+  final DonationsService donationsService = DonationsService();
+
+  late AnimationController _contentController;
+  late Animation<double> _contentAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _contentController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _contentAnimation = CurvedAnimation(
+      parent: _contentController,
+      curve: Curves.easeOut,
+    );
+    loadCampaignData();
+  }
+
+  @override
+  void dispose() {
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> loadCampaignData() async {
+    if (widget.campaignData != null) {
+      setState(() {
+        campaign = widget.campaignData;
+        raisedAmount = campaign!['currentAmount'] ?? 0;
+        isLoading = false;
+      });
+      _contentController.forward();
+    } else if (widget.campaignId != null) {
+      final data = await donationsService.getDonationById(widget.campaignId!);
+      final raised =
+          await donationsService.getTotalRaisedAmount(widget.campaignId!);
+      setState(() {
+        campaign = data;
+        raisedAmount = raised;
+        isLoading = false;
+      });
+      _contentController.forward();
+    } else {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> loadRaisedAmount() async {
+    if (campaign != null && campaign!['id'] != null) {
+      final raised =
+          await donationsService.getTotalRaisedAmount(campaign!['id']);
+      setState(() {
+        raisedAmount = raised;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<FundPostProvider>(context);
-    final post = provider.fundPost;
+    if (isLoading) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: Color(0xff008748)),
+        ),
+      );
+    }
 
-    final progress = (post.goalAmount > 0)
-        ? (post.raisedAmount / post.goalAmount).clamp(0.0, 1.0)
-        : 0.0;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          post.title,
-          style: TextStyle(
-            fontSize: 20,
-            fontFamily: "Poppins",
-            fontWeight: FontWeight.bold,
-            color: Color(0xff333333),
+    if (campaign == null) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.error_outline, size: 60, color: Color(0xff767676)),
+              SizedBox(height: 20),
+              Text(
+                "No campaign selected",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontFamily: "Roboto",
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff333333),
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                post.imagePath,
-                height: 200,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              post.description,
-              style: TextStyle(
-                fontSize: 15,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w700,
-                color: Color(0xff333333),
-              ),
-            ),
-            const SizedBox(height: 12),
+      );
+    }
 
-            Text(
-              'Collected: \$${post.raisedAmount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 20,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w700,
-                color: Color(0xff333333),
-              ),
-            ),
-            Text(
-              'Goal: \$${post.goalAmount.toStringAsFixed(2)}',
-              style: TextStyle(
-                fontSize: 17,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w500,
-                color: Color(0xff333333),
-              ),
-            ),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: progress,
-              minHeight: 10,
-              color: Color(0xff008748),
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _donationController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: Colors.grey, width: 2),
+    return Scaffold(
+      body: Padding(
+        padding: EdgeInsets.fromLTRB(
+          30,
+          MediaQuery.of(context).size.height * 0.05,
+          30,
+          MediaQuery.of(context).size.height * 0.05,
+        ),
+        child: SingleChildScrollView(
+          child: FadeTransition(
+            opacity: _contentAnimation,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Hero(
+                  tag: 'app_logo',
+                  child: Image(
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    image: AssetImage("imgs/logo.png"),
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: Color(0xff02A95C), width: 3),
+                SizedBox(height: 20),
+                Center(
+                  child: ScaleTransition(
+                    scale: _contentAnimation,
+                    child: CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Color(0xff008748),
+                      child: Icon(Icons.person, size: 40, color: Colors.white),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: LongButton(text: 'Donate Now', action: () {}),
-            ),
-            const SizedBox(height: 20),
-
-            const Text(
-              'Top donors',
-              style: TextStyle(
-                fontSize: 18,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w500,
-                color: Color(0xff333333),
-              ),
-            ),
-            const SizedBox(height: 10),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: post.topDonors.map((d) {
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Column(
-                      children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundImage: AssetImage(d.avatarUrl),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '\$${d.amount.toStringAsFixed(0)}',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontFamily: "Poppins",
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xff333333),
-                          ),
-                        ),
-                        Text(
-                          d.donorName,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontFamily: "Poppins",
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xff333333),
-                          ),
+                SizedBox(height: 20),
+                Hero(
+                  tag: 'fund_image_${campaign!['id']}',
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height * 0.2,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Color(0xffE8E8E8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 10,
+                          offset: Offset(0, 5),
                         ),
                       ],
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: campaign!['image'] != null &&
+                              campaign!['image'] != ''
+                          ? Image.network(
+                              campaign!['image'],
+                              fit: BoxFit.cover,
+                              width: MediaQuery.of(context).size.width,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(Icons.image,
+                                    size: 60, color: Color(0xff767676));
+                              },
+                            )
+                          : Icon(Icons.image, size: 60, color: Color(0xff767676)),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  campaign!['title'] ?? "Campaign Title",
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontFamily: "Roboto",
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xff333333),
+                  ),
+                ),
+                SizedBox(height: 10),
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 500),
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Color(0xff008748).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Raised: \$${raisedAmount.toString()}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: "Roboto",
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xff008748),
+                        ),
+                      ),
+                      Text(
+                        "Goal: \$${campaign!['donationGoal']?.toString() ?? '0'}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: "Roboto",
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xff333333),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 15),
+                Text(
+                  campaign!['description'] ?? "No description available.",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: "Roboto",
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xff767676),
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Amount",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: "Roboto",
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xff333333),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: Text(
+                        "\$",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: amountController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: "Enter amount",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
 
-            const SizedBox(height: 20),
-            const Text(
-              'Comments',
-              style: TextStyle(
-                fontSize: 17,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w700,
-                color: Color(0xff333333),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Column(
-              children: post.comments.map((c) {
-                return ListTile(
-                  leading: const CircleAvatar(child: Icon(Icons.person)),
+                SizedBox(height: 15),
+                Text(
+                  "Payment Method",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: "Roboto",
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xff333333),
+                  ),
+                ),
+                SizedBox(height: 10),
+                DropdownButton<String>(
+                  value: selectedPayment,
+                  isExpanded: true,
+                  items:
+                      ['Credit Card', 'Debit Card', 'PayPal', 'Bank Transfer']
+                          .map((method) {
+                    return DropdownMenuItem(
+                      value: method,
+                      child: Text(method),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      selectedPayment = value!;
+                    });
+                  },
+                ),
+                SizedBox(height: 15),
+                CheckboxListTile(
                   title: Text(
-                    c.userName,
+                    "Donate Anonymously",
                     style: TextStyle(
-                      fontSize: 17,
-                      fontFamily: "Poppins",
-                      fontWeight: FontWeight.w500,
+                      fontFamily: "Roboto",
+                      fontWeight: FontWeight.w700,
                       color: Color(0xff333333),
                     ),
                   ),
-                  subtitle: Text(
-                    c.comment,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontFamily: "Poppins",
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xff333333),
+                  value: isAnonymous,
+                  activeColor: Color(0xff008748),
+                  onChanged: (value) {
+                    setState(() {
+                      isAnonymous = value!;
+                    });
+                  },
+                ),
+                SizedBox(height: 15),
+                Text(
+                  "Comment",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: "Roboto",
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xff333333),
+                  ),
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: commentController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: "Leave a message...",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-                  trailing: Text(
-                    '\$${c.donatedAmount.toStringAsFixed(0)}',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontFamily: "Poppins",
-                      fontWeight: FontWeight.w500,
-                      color: Color(0xff333333),
-                    ),
-                  ),
-                );
-              }).toList(),
+                ),
+                SizedBox(height: 30),
+                LongButton(
+                  text: "Donate",
+                  action: () async {
+                    if (amountController.text.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please enter donation amount'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    double amount = double.tryParse(amountController.text) ?? 0;
+                    if (amount <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please enter valid amount'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    try {
+                      await donationsService.saveDonation(
+                        campaignId: campaign!['id'],
+                        donorId: 1, // TODO: Get from user session/auth
+                        amount: amount,
+                        currency: 'USD',
+                        paymentMethod: selectedPayment,
+                        isAnonymous: isAnonymous,
+                        comment: commentController.text,
+                      );
+
+                      await loadRaisedAmount();
+
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          title: Text('Success!'),
+                          content: Text(
+                              'Thank you for your donation of \$$amount!'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                amountController.clear();
+                                commentController.clear();
+                                setState(() {
+                                  isAnonymous = false;
+                                });
+                              },
+                              child: Text('OK',
+                                  style: TextStyle(color: Color(0xff008748))),
+                            ),
+                          ],
+                        ),
+                      );
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error processing donation: $e'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => provider.toggleStarred(),
-        child: Icon(
-          provider.fundPost.isStarred ? Icons.star : Icons.star_border,
-          color: Color(0xff008748),
+          ),
         ),
       ),
     );
-  }
-
-  void _handleDonation(FundPostProvider provider) {
-    final text = _donationController.text.trim();
-    final amount = double.tryParse(text);
-    if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Enter a valid amount')));
-      return;
-    }
-
-    provider.updateDonations(amount);
-    _donationController.clear();
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Thank you for donating')));
   }
 }

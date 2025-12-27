@@ -10,7 +10,7 @@ class Signup extends StatefulWidget {
   State<Signup> createState() => _SignupState();
 }
 
-class _SignupState extends State<Signup> {
+class _SignupState extends State<Signup> with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   TextEditingController name = TextEditingController();
   TextEditingController email = TextEditingController();
@@ -18,6 +18,29 @@ class _SignupState extends State<Signup> {
   bool isPasswordVisible = true;
   UserService userService = UserService();
   final storage = FlutterSecureStorage();
+
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutQuart));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   void toggleVisibility() {
     setState(() {
@@ -28,229 +51,258 @@ class _SignupState extends State<Signup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.fromLTRB(
-          26,
-          MediaQuery.of(context).size.height * 0.07,
-          26,
-          20,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Text(
-                  "Welcome To \nFund Bridge!",
-                  style: TextStyle(
-                    fontFamily: "Poppins",
-                    fontSize: 35,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff0D4715),
-                  ),
-                ),
-              ],
-            ),
-            Form(
-              key: formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            26,
+            MediaQuery.of(context).size.height * 0.08,
+            26,
+            20,
+          ),
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
               child: Column(
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Full Name",
+                  Hero(
+                    tag: 'app_logo',
+                    child: Image.asset(
+                      "imgs/logo.png",
+                      height: 80,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Welcome To \nFund Bridge!",
                         style: TextStyle(
-                          color: Color(0xff6B8A88),
                           fontFamily: "Poppins",
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                          fontSize: 35,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xff0D4715),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                  TextFormField(
-                    controller: name,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "Enter a name";
-                      }
-                    },
-                    style: TextStyle(
-                      color: Color(0xff0D4715),
-                      fontFamily: "Poppins",
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    decoration: InputDecoration(
-                      fillColor: Color(0xffF1F0E9),
-                      filled: true,
-                      isDense: true,
-                      prefixIcon: Icon(Icons.person_2_rounded, size: 20),
-                      prefixIconColor: Color(0xff0D4715),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: EdgeInsets.fromLTRB(0, 8, 0, 0),
+                  const SizedBox(height: 20),
+                  Form(
+                    key: formKey,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Full Name",
+                              style: TextStyle(
+                                color: Color(0xff6B8A88),
+                                fontFamily: "Poppins",
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextFormField(
+                          controller: name,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Enter a name";
+                            }
+                            return null;
+                          },
+                          style: TextStyle(
+                            color: Color(0xff0D4715),
+                            fontFamily: "Poppins",
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          decoration: InputDecoration(
+                            fillColor: Color(0xffF1F0E9),
+                            filled: true,
+                            isDense: true,
+                            prefixIcon: Icon(Icons.person_2_rounded, size: 20),
+                            prefixIconColor: Color(0xff0D4715),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Email address",
+                              style: TextStyle(
+                                color: Color(0xff6B8A88),
+                                fontFamily: "Poppins",
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextFormField(
+                          controller: email,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return "Enter an email";
+                            }
+                            return null;
+                          },
+                          style: TextStyle(
+                            color: Color(0xff0D4715),
+                            fontFamily: "Poppins",
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Color(0xffF1F0E9),
+                            isDense: true,
+                            prefixIcon: Icon(FontAwesomeIcons.envelope, size: 20),
+                            prefixIconColor: Color(0xff0D4715),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Password",
+                              style: TextStyle(
+                                color: Color(0xff6B8A88),
+                                fontFamily: "Poppins",
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextFormField(
+                          obscureText: isPasswordVisible,
+                          controller: password,
+                          validator: (value) {
+                            if (value == null || value.length < 6) {
+                              return "Password length must be at least 6 characters";
+                            }
+                            return null;
+                          },
+                          style: TextStyle(
+                            color: Color(0xff0D4715),
+                            fontFamily: "Poppins",
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                          decoration: InputDecoration(
+                            isDense: true,
+                            filled: true,
+                            fillColor: Color(0xffF1F0E9),
+                            prefixIcon: Icon(FontAwesomeIcons.lock, size: 20),
+                            prefixIconColor: Color(0xff0D4715),
+                            suffixIcon: IconButton(
+                              onPressed: toggleVisibility,
+                              icon: Icon(
+                                isPasswordVisible
+                                    ? FontAwesomeIcons.eye
+                                    : FontAwesomeIcons.eyeSlash,
+                              ),
+                            ),
+                            suffixIconColor: Colors.lightGreen,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Email address",
-                        style: TextStyle(
-                          color: Color(0xff6B8A88),
-                          fontFamily: "Poppins",
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                    padding: const EdgeInsets.fromLTRB(0, 40, 0, 16),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.85,
+                      height: 55,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color.fromARGB(255, 33, 185, 96),
+                            Color.fromARGB(255, 0, 255, 132),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (formKey.currentState!.validate()) {
+                            userService.createUser(
+                              name.text,
+                              email.text,
+                              password.text,
+                            );
+                            final userId = await userService.getUserByEmail(
+                              email.text,
+                            );
+                            await storage.write(
+                              key: 'USER_ID',
+                              value: userId.toString(),
+                            );
+                            Navigator.pushNamed(context, "/");
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Data input has some mistakes"),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          "Sign up",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: email,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "Enter an email";
-                      }
-                    },
-                    style: TextStyle(
-                      color: Color(0xff0D4715),
-                      fontFamily: "Poppins",
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Color(0xffF1F0E9),
-                      isDense: true,
-                      prefixIcon: Icon(FontAwesomeIcons.envelope, size: 20),
-                      prefixIconColor: Color(0xff0D4715),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Password",
-                        style: TextStyle(
-                          color: Color(0xff6B8A88),
-                          fontFamily: "Poppins",
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    obscureText: isPasswordVisible,
-                    controller: password,
-                    validator: (value) {
-                      if (value!.length < 6) {
-                        return "Password length must be at least 6 characters";
-                      }
-                    },
-                    style: TextStyle(
-                      color: Color(0xff0D4715),
-                      fontFamily: "Poppins",
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      filled: true,
-                      fillColor: Color(0xffF1F0E9),
-                      prefixIcon: Icon(FontAwesomeIcons.lock, size: 20),
-                      prefixIconColor: Color(0xff0D4715),
-                      suffixIcon: IconButton(
-                        onPressed: toggleVisibility,
-                        icon: Icon(
-                          isPasswordVisible
-                              ? FontAwesomeIcons.eye
-                              : FontAwesomeIcons.eyeSlash,
-                        ),
-                      ),
-                      suffixIconColor: Colors.lightGreen,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: EdgeInsets.fromLTRB(0, 8, 0, 0),
                     ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.85,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 33, 185, 96),
-                      Color.fromARGB(255, 0, 255, 132),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (formKey.currentState!.validate()) {
-                      userService.createUser(
-                        name.text,
-                        email.text,
-                        password.text,
-                      );
-                      print(userService.getAllUsers());
-                      final userId = await userService.getUserByEmail(
-                        email.text,
-                      );
-                      await storage.write(
-                        key: 'USER_ID',
-                        value: userId.toString(),
-                      );
-                      Navigator.pushNamed(context, "/");
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("Data input has some mistakes"),
-                          backgroundColor: Colors.red,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                  ),
-                  child: Text(
-                    "Sign up",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
