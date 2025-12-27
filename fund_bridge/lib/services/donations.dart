@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:fund_bridge/services/database.dart';
 
 class DonationsService {
@@ -93,6 +92,56 @@ class DonationsService {
       whereArgs: [campaignId],
       orderBy: 'donatedAt DESC',
     );
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getDonationHistoryWithUser(
+    int campaignId,
+  ) async {
+    final db = await databaseService.database;
+    final result = await db.rawQuery(
+      '''
+SELECT
+  dh.id,
+  dh.campaignId,
+  dh.donorId,
+  dh.amount,
+  dh.currency,
+  dh.paymentMethod,
+  dh.isAnonymous,
+  dh.comment,
+  dh.donatedAt,
+  u.name AS donorName,
+  u.profileImage AS donorProfileImage
+FROM ${databaseService.donationHistoryTable} dh
+LEFT JOIN ${databaseService.userTable} u ON u.id = dh.donorId
+WHERE dh.campaignId = ?
+ORDER BY dh.donatedAt DESC
+''',
+      [campaignId],
+    );
+    return result;
+  }
+
+  Future<List<Map<String, dynamic>>> getDonationsByUserId(int userId) async {
+    final db = await databaseService.database;
+    final campaigns = await db.query(
+      databaseService.donationsTable,
+      where: 'userId = ?',
+      whereArgs: [userId],
+      orderBy: 'id DESC',
+    );
+
+    final result = <Map<String, dynamic>>[];
+    for (final c in campaigns) {
+      final id = c['id'];
+      if (id is int) {
+        final totalRaised = await getTotalRaisedAmount(id);
+        result.add({...c, 'totalRaised': totalRaised});
+      } else {
+        result.add({...c, 'totalRaised': 0});
+      }
+    }
     return result;
   }
 }

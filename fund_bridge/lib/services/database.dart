@@ -24,19 +24,19 @@ class DatabaseService {
     final databasePath = join(databaseDirPath, "fundBridge.db");
     final database = await openDatabase(
       databasePath,
-      version: 7,
+      version: 8,
       onCreate: (db, version) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        await db.execute("DROP TABLE IF EXISTS user;");
-        await db.execute("DROP TABLE IF EXISTS donations;");
-        await db.execute("DROP TABLE IF EXISTS donation_history;");
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
+        try {
+          await db.execute("ALTER TABLE user ADD COLUMN profileImage TEXT;");
+        } catch (_) {}
       },
     );
     return database;
@@ -47,7 +47,8 @@ class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT NOT NULL,
         name TEXT NOT NULL,
-        password TEXT NOT NULL    
+        password TEXT NOT NULL,
+        profileImage TEXT
         )''');
   }
 

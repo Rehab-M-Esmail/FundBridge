@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fund_bridge/services/userService.dart';
 
@@ -16,6 +17,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
   bool isPasswordVisible = true;
   String? loginStatus;
   UserService userService = UserService();
+  final storage = FlutterSecureStorage();
 
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
@@ -62,7 +64,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
             child: SlideTransition(
               position: _slideAnimation,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Hero(
                     tag: 'app_logo',
@@ -72,19 +74,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Welcome Back \nTo Fund Bridge!",
-                        style: TextStyle(
-                          fontFamily: "Poppins",
-                          fontSize: 35,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xff0D4715),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    "Welcome Back \nTo Fund Bridge!",
+                    style: TextStyle(
+                      fontFamily: "Poppins",
+                      fontSize: 35,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff0D4715),
+                    ),
                   ),
                   const SizedBox(height: 30),
                   Form(
@@ -125,13 +122,15 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                             filled: true,
                             fillColor: Color(0xffF1F0E9),
                             isDense: true,
-                            prefixIcon: Icon(FontAwesomeIcons.envelope, size: 20),
+                            prefixIcon:
+                                Icon(FontAwesomeIcons.envelope, size: 20),
                             prefixIconColor: Color(0xff0D4715),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 15),
                           ),
                         ),
                         Padding(
@@ -183,7 +182,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 15),
                           ),
                         ),
                       ],
@@ -214,22 +214,35 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                       ),
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (formKey.currentState!.validate()) {
-                            final user = await userService.userLogin(
-                              email.text,
-                              password.text,
+                          if (formKey.currentState == null ||
+                              !formKey.currentState!.validate()) {
+                            return;
+                          }
+
+                          final user = await userService.userLogin(
+                            email.text,
+                            password.text,
+                          );
+                          if (user != null) {
+                            await storage.write(
+                              key: 'USER_ID',
+                              value: user.toString(),
                             );
-                            if (user != null) {
-                              Navigator.pushNamed(context, "/");
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("User does not exist"),
-                                  backgroundColor: Colors.red,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            }
+                            if (!mounted) return;
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              "/",
+                              (route) => false,
+                            );
+                          } else {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("User does not exist"),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -240,7 +253,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                           ),
                         ),
                         child: const Text(
-                          "Login",
+                          "Log in",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
