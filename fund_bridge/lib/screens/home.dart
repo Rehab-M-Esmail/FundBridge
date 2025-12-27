@@ -48,7 +48,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
   Future<List<Funding>> fetchFundings() async {
     final response = await http.get(
-      Uri.parse('http://10.30.190.133:8000/api/fundings'),
+      Uri.parse('http://10.0.2.2:8000/api/fundings'),
     );
 
     if (response.statusCode == 200) {
@@ -63,6 +63,13 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     fundings = fetchFundings();
+  }
+
+  // --- NEW METHOD TO REFRESH DATA ---
+  void _refreshData() {
+    setState(() {
+      fundings = fetchFundings();
+    });
   }
 
   @override
@@ -162,40 +169,55 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                             trailing: Text(
                               "\$${fund.fundingAmount}",
                               style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xff008748)),
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xff008748),
+                              ),
                             ),
-                            onTap: () {
-                              Navigator.push(
+                            onTap: () async {
+                              // <-- 1. Made async
+                              await Navigator.push(
+                                // <-- 2. Added await
                                 context,
                                 PageRouteBuilder(
-                                  transitionDuration:
-                                      const Duration(milliseconds: 500),
-                                  reverseTransitionDuration:
-                                      const Duration(milliseconds: 500),
-                                  pageBuilder: (context, animation,
-                                          secondaryAnimation) =>
-                                      donate(
-                                    campaignData: {
-                                      'id': fund.id,
-                                      'title': fund.title,
-                                      'description': fund.description,
-                                      'donationGoal': fund.fundingAmount,
-                                      'currentAmount': fund.currentAmount,
-                                      'image': fund.image,
-                                      'author': fund.author,
-                                      'category': fund.category,
-                                    },
+                                  transitionDuration: const Duration(
+                                    milliseconds: 500,
                                   ),
-                                  transitionsBuilder: (context, animation,
-                                      secondaryAnimation, child) {
-                                    return FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    );
-                                  },
+                                  reverseTransitionDuration: const Duration(
+                                    milliseconds: 500,
+                                  ),
+                                  pageBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                      ) => donate(
+                                        campaignData: {
+                                          'id': fund.id,
+                                          'title': fund.title,
+                                          'description': fund.description,
+                                          'donationGoal': fund.fundingAmount,
+                                          'currentAmount': fund.currentAmount,
+                                          'image': fund.image,
+                                          'author': fund.author,
+                                          'category': fund.category,
+                                        },
+                                      ),
+                                  transitionsBuilder:
+                                      (
+                                        context,
+                                        animation,
+                                        secondaryAnimation,
+                                        child,
+                                      ) {
+                                        return FadeTransition(
+                                          opacity: animation,
+                                          child: child,
+                                        );
+                                      },
                                 ),
                               );
+                              // <-- 3. Refresh data when back
+                              _refreshData();
                             },
                           ),
                         ),

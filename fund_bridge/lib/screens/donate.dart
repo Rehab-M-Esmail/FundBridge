@@ -4,6 +4,8 @@ import 'package:fund_bridge/services/donations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fund_bridge/services/userService.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class donate extends StatefulWidget {
   final int? campaignId;
@@ -82,17 +84,14 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
       _contentController.forward();
     } else if (widget.campaignId != null) {
       final data = await donationsService.getDonationById(widget.campaignId!);
-      // Don't overwrite raisedAmount with local DB sum initially if we have campaign data
-      final raised = await donationsService.getTotalRaisedAmount(
-        widget.campaignId!,
-      );
 
       setState(() {
         campaign = data;
-        // If data from server/widget exists, use that. Otherwise use local raised.
+        // ALWAYS use server's currentAmount if available (this is the total from all users)
         raisedAmount = (data != null && data['currentAmount'] != null)
             ? data['currentAmount']
-            : raised;
+                  .toInt() // Convert to int if needed
+            : 0;
         isLoading = false;
         if (campaign?['id'] != null) {
           _donationHistoryFuture = donationsService.getDonationHistoryWithUser(
@@ -115,22 +114,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
         campaign!['id'],
       );
     });
-  }
-
-  // NOTE: This function sums LOCAL donations.
-  // We should avoid using this if we want global server totals.
-  Future<void> loadLocalRaisedAmount() async {
-    if (campaign != null && campaign!['id'] != null) {
-      final raised = await donationsService.getTotalRaisedAmount(
-        campaign!['id'],
-      );
-      // Only update if we don't have a higher value already (server value is usually higher)
-      if (raised > raisedAmount) {
-        setState(() {
-          raisedAmount = raised;
-        });
-      }
-    }
   }
 
   @override
@@ -243,40 +226,29 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: Builder(
-                        builder: (context) {
-                          final raw = campaign?['image']?.toString() ?? '';
-                          final imagePathOrUrl = raw.trim();
-
-                          if (imagePathOrUrl.isEmpty) {
-                            return Icon(
-                              Icons.image,
-                              size: 60,
-                              color: Color(0xff767676),
-                            );
-                          }
-
-                          final isRemote = imagePathOrUrl.startsWith('http://') ||
-                              imagePathOrUrl.startsWith('https://');
-
-                          if (isRemote) {
-                            return Image.network(
-                              imagePathOrUrl,
+                      child:
+                          campaign!['image'] != null && campaign!['image'] != ''
+                          ? Image.network(
+                              campaign!['image'],
                               fit: BoxFit.cover,
                               width: MediaQuery.of(context).size.width,
                               loadingBuilder:
                                   (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes !=
-                                            null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                            loadingProgress.expectedTotalBytes!
-                                        : null,
-                                  ),
-                                );
-                              },
+                                    if (loadingProgress == null) return child;
+                                    return Center(
+                                      child: CircularProgressIndicator(
+                                        value:
+                                            loadingProgress
+                                                    .expectedTotalBytes !=
+                                                null
+                                            ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                            : null,
+                                      ),
+                                    );
+                                  },
                               errorBuilder: (context, error, stackTrace) {
                                 return Icon(
                                   Icons.image,
@@ -284,32 +256,12 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                                   color: Color(0xff767676),
                                 );
                               },
-                            );
-                          }
-
-                          final file = File(imagePathOrUrl);
-                          if (!file.existsSync()) {
-                            return Icon(
+                            )
+                          : Icon(
                               Icons.image,
                               size: 60,
                               color: Color(0xff767676),
-                            );
-                          }
-
-                          return Image.file(
-                            file,
-                            fit: BoxFit.cover,
-                            width: MediaQuery.of(context).size.width,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(
-                                Icons.image,
-                                size: 60,
-                                color: Color(0xff767676),
-                              );
-                            },
-                          );
-                        },
-                      ),
+                            ),
                     ),
                   ),
                 ),
@@ -519,6 +471,15 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     }
 
                     try {
+                      int previousTotal = raisedAmount;
+                      int optimisticTotal = previousTotal + amount.toInt();
+
+                      setState(() {
+                        raisedAmount = optimisticTotal;
+                        if (campaign != null) {
+                          campaign!['currentAmount'] = optimisticTotal;
+                        }
+                      });
                       await donationsService.saveDonation(
                         campaignId: campaign!['id'],
                         donorId: userId,
@@ -528,7 +489,61 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         isAnonymous: isAnonymous,
                         comment: commentController.text,
                       );
-                      await loadLocalRaisedAmount();
+                      try {
+                        final apiUrl = Uri.parse(
+                          'http://10.0.2.2:8000/api/fundings',
+                        );
+                        final response = await http.patch(
+                          apiUrl,
+                          headers: {'Content-Type': 'application/json'},
+                          body: jsonEncode({
+                            'id': campaign!['id'],
+                            'amount': amount,
+                          }),
+                        );
+
+                        if (response.statusCode == 200) {
+                          final responseData = jsonDecode(response.body);
+                          print("API Response: $responseData");
+
+                          // First try to get currentAmount from the root
+                          var serverTotal = responseData['currentAmount'];
+
+                          // If not in root, check in 'data' field
+                          if (serverTotal == null &&
+                              responseData['data'] != null) {
+                            serverTotal = responseData['data']['currentAmount'];
+                          }
+
+                          // If we got a valid total from server, use it (this should be the total from all users)
+                          if (serverTotal != null) {
+                            final newTotal = (serverTotal is String)
+                                ? double.tryParse(serverTotal)?.toInt() ??
+                                      raisedAmount
+                                : (serverTotal is num)
+                                ? serverTotal.toInt()
+                                : raisedAmount;
+
+                            setState(() {
+                              raisedAmount = newTotal;
+                              if (campaign != null) {
+                                campaign!['currentAmount'] = newTotal;
+                              }
+                            });
+                          } else {
+                            print(
+                              "Server didn't return currentAmount, keeping optimistic total",
+                            );
+                          }
+                        } else {
+                          print(
+                            'Failed to update server: ${response.statusCode}',
+                          );
+                        }
+                      } catch (apiError) {
+                        print('Error calling API: $apiError');
+                      }
+
                       _reloadDonationHistory();
 
                       showDialog(
