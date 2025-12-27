@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:fund_bridge/screens/donate.dart';
 import 'package:fund_bridge/screens/home.dart';
 import 'package:fund_bridge/screens/fundpost.dart';
 import 'package:fund_bridge/screens/login.dart';
+import 'package:fund_bridge/screens/profile.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class MainScaffold extends StatefulWidget {
@@ -33,7 +33,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     setState(() {
       final isLoggedIn = userId != null && userId.isNotEmpty && userId != 'null';
       if (isLoggedIn) {
-        pages = [Home(), FundPostPage1(), DonatePage()];
+        pages = [Home(), FundPostPage1(), ProfilePage()];
       } else {
         pages = [Home(), FundPostPage1(), Login()];
       }

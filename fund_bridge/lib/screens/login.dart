@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fund_bridge/services/userService.dart';
-import 'package:http/http.dart' as http;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -18,6 +17,7 @@ class _LoginState extends State<Login> {
   bool isPasswordVisible = true;
   String? loginStatus;
   UserService userService = UserService();
+  final storage = FlutterSecureStorage();
 
   void toggleVisibility() {
     setState(() {
@@ -169,12 +169,22 @@ class _LoginState extends State<Login> {
                 ),
                 child: ElevatedButton(
                   onPressed: () async {
+                    if (formKey.currentState == null ||
+                        !formKey.currentState!.validate()) {
+                      return;
+                    }
                     final user = await userService.userLogin(
                       email.text,
                       password.text,
                     );
                     if (user != null) {
-                      Navigator.pushNamed(context, "/");
+                      await storage.write(key: 'USER_ID', value: user.toString());
+                      if (!context.mounted) return;
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        "/",
+                        (route) => false,
+                      );
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -190,7 +200,7 @@ class _LoginState extends State<Login> {
                     shadowColor: Colors.transparent,
                   ),
                   child: Text(
-                    "Sign up",
+                    "Log in",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 15,

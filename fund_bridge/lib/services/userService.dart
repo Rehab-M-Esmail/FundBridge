@@ -26,6 +26,19 @@ class UserService {
     return result.isNotEmpty ? result.first['id'] : null;
   }
 
+  Future<Map<String, dynamic>?> getUserById(int id) async {
+    final db = await databaseService.database;
+    final result = await db.query(
+      databaseService.userTable,
+      where: "id = ?",
+      whereArgs: [id],
+    );
+    if (result.isNotEmpty) {
+      return Map<String, dynamic>.from(result.first);
+    }
+    return null;
+  }
+
   Future<int?> userLogin(String email, String password) async {
     final db = await databaseService.database;
     final result = await db.query(
