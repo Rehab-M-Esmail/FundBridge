@@ -24,6 +24,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
   final FlutterSecureStorage storage = FlutterSecureStorage();
   final UserService userService = UserService();
   Future<Map<String, dynamic>?>? _userFuture;
+  Future<List<Map<String, dynamic>>>? _donationHistoryFuture;
 
   Map<String, dynamic>? campaign;
   int raisedAmount = 0;
@@ -72,6 +73,10 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
         campaign = widget.campaignData;
         raisedAmount = campaign!['currentAmount'] ?? 0;
         isLoading = false;
+        if (campaign?['id'] != null) {
+          _donationHistoryFuture =
+              donationsService.getDonationHistoryWithUser(campaign!['id']);
+        }
       });
       _contentController.forward();
     } else if (widget.campaignId != null) {
@@ -82,6 +87,10 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
         campaign = data;
         raisedAmount = raised;
         isLoading = false;
+        if (campaign?['id'] != null) {
+          _donationHistoryFuture =
+              donationsService.getDonationHistoryWithUser(campaign!['id']);
+        }
       });
       _contentController.forward();
     } else {
@@ -89,6 +98,14 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
         isLoading = false;
       });
     }
+  }
+
+  void _reloadDonationHistory() {
+    if (campaign?['id'] == null) return;
+    setState(() {
+      _donationHistoryFuture =
+          donationsService.getDonationHistoryWithUser(campaign!['id']);
+    });
   }
 
   Future<void> loadRaisedAmount() async {
@@ -393,6 +410,17 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                 LongButton(
                   text: "Donate",
                   action: () async {
+                    final userId = await _getUserId();
+                    if (userId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please log in to donate'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
                     if (amountController.text.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -417,7 +445,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     try {
                       await donationsService.saveDonation(
                         campaignId: campaign!['id'],
-                        donorId: 1, // TODO: Get from user session/auth
+                        donorId: userId,
                         amount: amount,
                         currency: 'USD',
                         paymentMethod: selectedPayment,
@@ -426,6 +454,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                       );
 
                       await loadRaisedAmount();
+                      _reloadDonationHistory();
 
                       showDialog(
                         context: context,
@@ -459,6 +488,141 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         ),
                       );
                     }
+                  },
+                ),
+                SizedBox(height: 30),
+                Text(
+                  "Recent donations",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: "Roboto",
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xff333333),
+                  ),
+                ),
+                SizedBox(height: 10),
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _donationHistoryFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: CircularProgressIndicator(
+                            color: Color(0xff008748),
+                          ),
+                        ),
+                      );
+                    }
+
+                    final history = snapshot.data ?? [];
+                    if (history.isEmpty) {
+                      return Text(
+                        "No donations yet. Be the first!",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: "Roboto",
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xff767676),
+                        ),
+                      );
+                    }
+
+                    return ListView.separated(
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: history.length,
+                      separatorBuilder: (_, __) => SizedBox(height: 10),
+                      itemBuilder: (context, index) {
+                        final row = history[index];
+                        final isAnon = (row['isAnonymous'] as int?) == 1;
+                        final donorNameRaw = row['donorName']?.toString() ?? '';
+                        final donorName =
+                            isAnon ? 'Anonymous' : (donorNameRaw.isNotEmpty ? donorNameRaw : 'Unknown');
+
+                        final donorProfileImagePath =
+                            row['donorProfileImage']?.toString();
+                        final hasProfileImage = !isAnon &&
+                            donorProfileImagePath != null &&
+                            donorProfileImagePath.isNotEmpty &&
+                            File(donorProfileImagePath).existsSync();
+
+                        final amount = (row['amount'] as num?)?.toDouble() ?? 0;
+                        final currency = row['currency']?.toString() ?? '';
+                        final comment = row['comment']?.toString() ?? '';
+
+                        return Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Color(0xffF1F0E9),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Color(0xff008748),
+                                backgroundImage: hasProfileImage
+                                    ? FileImage(File(donorProfileImagePath!))
+                                    : null,
+                                child: hasProfileImage
+                                    ? null
+                                    : Icon(Icons.person,
+                                        size: 18, color: Colors.white),
+                              ),
+                              SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            donorName,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontFamily: "Roboto",
+                                              fontWeight: FontWeight.w800,
+                                              color: Color(0xff333333),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          "\$${amount.toStringAsFixed(0)}",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontFamily: "Roboto",
+                                            fontWeight: FontWeight.w800,
+                                            color: Color(0xff008748),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (comment.trim().isNotEmpty) ...[
+                                      SizedBox(height: 6),
+                                      Text(
+                                        comment,
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontFamily: "Roboto",
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xff767676),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
                   },
                 ),
               ],
