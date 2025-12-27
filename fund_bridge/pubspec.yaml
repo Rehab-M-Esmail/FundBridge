@@ -1,5 +1,6 @@
 name: fund_bridge
-description: "A new Flutter project."
+description: "Funding application to connect donors with people in need."
+Version: 1.0.0+1
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -51,22 +52,25 @@ flutter_native_splash:
   android: true
   ios: true
   web: false
-  
+
   android_12:
     image: imgs/logo.png
     color: "#ffffff"
-  
+
   fullscreen: true
   android_gravity: center
   ios_content_mode: center
-
-
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   image_picker: ^1.0.4
+  flutter_launcher_icons: ^0.14.4 #for the app icon
 
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "imgs/logo.png"
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
