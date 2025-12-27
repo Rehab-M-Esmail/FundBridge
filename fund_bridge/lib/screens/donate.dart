@@ -69,8 +69,11 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // --- MERGED & UPDATED LOAD FUNCTION ---
   Future<void> loadCampaignData() async {
+    // Case 1: Data passed via Constructor (Fast Load)
     if (widget.campaignData != null) {
+      // 1. Show the passed data IMMEDIATELY
       setState(() {
         campaign = widget.campaignData;
         raisedAmount = campaign!['currentAmount'] ?? 0;
@@ -82,15 +85,36 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
         }
       });
       _contentController.forward();
-    } else if (widget.campaignId != null) {
+
+      // 2. BACKGROUND REFRESH (The Fix)
+      // Fetch fresh data from server to ensure 'raisedAmount' is actually current
+      try {
+        if (campaign?['id'] != null) {
+          final freshData = await donationsService.getDonationById(
+            campaign!['id'],
+          );
+          if (freshData != null && mounted) {
+            setState(() {
+              // Update local campaign object with fresh data
+              campaign = freshData;
+              // Update the raised amount with the server's truth
+              raisedAmount = (freshData['currentAmount'] ?? 0).toInt();
+            });
+          }
+        }
+      } catch (e) {
+        print("Error fetching fresh campaign data: $e");
+      }
+    }
+    // Case 2: Only ID passed (Must Load first)
+    else if (widget.campaignId != null) {
       final data = await donationsService.getDonationById(widget.campaignId!);
 
       setState(() {
         campaign = data;
-        // ALWAYS use server's currentAmount if available (this is the total from all users)
+        // ALWAYS use server's currentAmount if available
         raisedAmount = (data != null && data['currentAmount'] != null)
-            ? data['currentAmount']
-                  .toInt() // Convert to int if needed
+            ? data['currentAmount'].toInt()
             : 0;
         isLoading = false;
         if (campaign?['id'] != null) {
@@ -471,6 +495,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     }
 
                     try {
+                      // 1. Optimistic Update (Immediate UI change)
                       int previousTotal = raisedAmount;
                       int optimisticTotal = previousTotal + amount.toInt();
 
@@ -480,6 +505,8 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                           campaign!['currentAmount'] = optimisticTotal;
                         }
                       });
+
+                      // 2. Save locally
                       await donationsService.saveDonation(
                         campaignId: campaign!['id'],
                         donorId: userId,
@@ -489,6 +516,8 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         isAnonymous: isAnonymous,
                         comment: commentController.text,
                       );
+
+                      // 3. Call API to update server
                       try {
                         final apiUrl = Uri.parse(
                           'http://10.0.2.2:8000/api/fundings',
@@ -506,34 +535,41 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                           final responseData = jsonDecode(response.body);
                           print("API Response: $responseData");
 
-                          // First try to get currentAmount from the root
-                          var serverTotal = responseData['currentAmount'];
+                          // Search for the total amount key in response
+                          var serverTotalRaw =
+                              responseData['currentAmount'] ??
+                              responseData['current_amount'] ??
+                              responseData['raised'] ??
+                              responseData['raisedAmount'];
 
-                          // If not in root, check in 'data' field
-                          if (serverTotal == null &&
+                          // Nested 'data' check
+                          if (serverTotalRaw == null &&
                               responseData['data'] != null) {
-                            serverTotal = responseData['data']['currentAmount'];
+                            final inner = responseData['data'];
+                            serverTotalRaw =
+                                inner['currentAmount'] ??
+                                inner['current_amount'];
                           }
 
-                          // If we got a valid total from server, use it (this should be the total from all users)
-                          if (serverTotal != null) {
-                            final newTotal = (serverTotal is String)
-                                ? double.tryParse(serverTotal)?.toInt() ??
-                                      raisedAmount
-                                : (serverTotal is num)
-                                ? serverTotal.toInt()
-                                : raisedAmount;
+                          // 4. Intelligent Overwrite
+                          // Only overwrite UI if server returns a plausible TOTAL (greater than current donation)
+                          if (serverTotalRaw != null) {
+                            double serverTotal =
+                                double.tryParse(serverTotalRaw.toString()) ??
+                                0.0;
 
-                            setState(() {
-                              raisedAmount = newTotal;
-                              if (campaign != null) {
-                                campaign!['currentAmount'] = newTotal;
-                              }
-                            });
-                          } else {
-                            print(
-                              "Server didn't return currentAmount, keeping optimistic total",
-                            );
+                            if (serverTotal > amount) {
+                              setState(() {
+                                raisedAmount = serverTotal.toInt();
+                                if (campaign != null) {
+                                  campaign!['currentAmount'] = raisedAmount;
+                                }
+                              });
+                            } else {
+                              print(
+                                "Server returned a value ($serverTotal) smaller or equal to donation. Keeping optimistic total.",
+                              );
+                            }
                           }
                         } else {
                           print(
