@@ -4,8 +4,6 @@ import 'package:fund_bridge/services/donations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fund_bridge/services/userService.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class donate extends StatefulWidget {
   final int? campaignId;
@@ -245,29 +243,40 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child:
-                          campaign!['image'] != null && campaign!['image'] != ''
-                          ? Image.network(
-                              campaign!['image'],
+                      child: Builder(
+                        builder: (context) {
+                          final raw = campaign?['image']?.toString() ?? '';
+                          final imagePathOrUrl = raw.trim();
+
+                          if (imagePathOrUrl.isEmpty) {
+                            return Icon(
+                              Icons.image,
+                              size: 60,
+                              color: Color(0xff767676),
+                            );
+                          }
+
+                          final isRemote = imagePathOrUrl.startsWith('http://') ||
+                              imagePathOrUrl.startsWith('https://');
+
+                          if (isRemote) {
+                            return Image.network(
+                              imagePathOrUrl,
                               fit: BoxFit.cover,
                               width: MediaQuery.of(context).size.width,
                               loadingBuilder:
                                   (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        value:
-                                            loadingProgress
-                                                    .expectedTotalBytes !=
-                                                null
-                                            ? loadingProgress
-                                                      .cumulativeBytesLoaded /
-                                                  loadingProgress
-                                                      .expectedTotalBytes!
-                                            : null,
-                                      ),
-                                    );
-                                  },
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes !=
+                                            null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
+                                );
+                              },
                               errorBuilder: (context, error, stackTrace) {
                                 return Icon(
                                   Icons.image,
@@ -275,12 +284,32 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                                   color: Color(0xff767676),
                                 );
                               },
-                            )
-                          : Icon(
+                            );
+                          }
+
+                          final file = File(imagePathOrUrl);
+                          if (!file.existsSync()) {
+                            return Icon(
                               Icons.image,
                               size: 60,
                               color: Color(0xff767676),
-                            ),
+                            );
+                          }
+
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.image,
+                                size: 60,
+                                color: Color(0xff767676),
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -490,15 +519,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     }
 
                     try {
-                      int previousTotal = raisedAmount;
-                      int optimisticTotal = previousTotal + amount.toInt();
-
-                      setState(() {
-                        raisedAmount = optimisticTotal;
-                        if (campaign != null) {
-                          campaign!['currentAmount'] = optimisticTotal;
-                        }
-                      });
                       await donationsService.saveDonation(
                         campaignId: campaign!['id'],
                         donorId: userId,
@@ -508,68 +528,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         isAnonymous: isAnonymous,
                         comment: commentController.text,
                       );
-                      try {
-                        final apiUrl = Uri.parse(
-                          'http://10.0.2.2:8000/api/fundings',
-                        );
-                        final response = await http.patch(
-                          apiUrl,
-                          headers: {'Content-Type': 'application/json'},
-                          body: jsonEncode({
-                            'id': campaign!['id'],
-                            'amount': amount,
-                          }),
-                        );
-
-                        if (response.statusCode == 200) {
-                          final responseData = jsonDecode(response.body);
-                          print("API Response: $responseData");
-                          var serverTotalRaw =
-                              responseData['currentAmount'] ??
-                              responseData['current_amount'] ??
-                              responseData['raised'] ??
-                              responseData['raisedAmount'];
-
-                          // Nested 'data' check
-                          if (serverTotalRaw == null &&
-                              responseData['data'] != null) {
-                            final inner = responseData['data'];
-                            serverTotalRaw =
-                                inner['currentAmount'] ??
-                                inner['current_amount'];
-                          }
-
-                          if (serverTotalRaw != null) {
-                            double serverTotal =
-                                double.tryParse(serverTotalRaw.toString()) ??
-                                0.0;
-
-                            // 5. INTELLIGENT OVERWRITE
-                            // Only overwrite the UI if the server returns a value that
-                            // looks like a TOTAL (i.e., it's bigger than the single donation)
-                            // This protects against the server returning just the receipt amount.
-                            if (serverTotal > amount) {
-                              setState(() {
-                                raisedAmount = serverTotal.toInt();
-                                if (campaign != null) {
-                                  campaign!['currentAmount'] = raisedAmount;
-                                }
-                              });
-                            } else {
-                              print(
-                                "Server returned a value ($serverTotal) smaller or equal to donation. Keeping optimistic total.",
-                              );
-                            }
-                          }
-                        } else {
-                          print(
-                            'Failed to update server: ${response.statusCode}',
-                          );
-                        }
-                      } catch (apiError) {
-                        print('Error calling API: $apiError');
-                      }
-
+                      await loadLocalRaisedAmount();
                       _reloadDonationHistory();
 
                       showDialog(
