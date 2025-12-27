@@ -15,7 +15,6 @@ class donate extends StatefulWidget {
 class _donateState extends State<donate> with TickerProviderStateMixin {
   TextEditingController amountController = TextEditingController();
   TextEditingController commentController = TextEditingController();
-  String selectedCurrency = 'EGP';
   String selectedPayment = 'Debit Card';
   bool isAnonymous = false;
 
@@ -258,8 +257,19 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                 SizedBox(height: 10),
                 Row(
                   children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: Text(
+                        "\$",
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(width: 10),
                     Expanded(
-                      flex: 3,
                       child: TextField(
                         controller: amountController,
                         keyboardType: TextInputType.number,
@@ -271,26 +281,9 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         ),
                       ),
                     ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: DropdownButton<String>(
-                        value: selectedCurrency,
-                        isExpanded: true,
-                        items: ['USD', 'EUR', 'KWD', 'EGP'].map((currency) {
-                          return DropdownMenuItem(
-                            value: currency,
-                            child: Text(currency),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedCurrency = value!;
-                          });
-                        },
-                      ),
-                    ),
                   ],
                 ),
+
                 SizedBox(height: 15),
                 Text(
                   "Payment Method",
@@ -388,7 +381,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         campaignId: campaign!['id'],
                         donorId: 1, // TODO: Get from user session/auth
                         amount: amount,
-                        currency: selectedCurrency,
+                        currency: 'USD',
                         paymentMethod: selectedPayment,
                         isAnonymous: isAnonymous,
                         comment: commentController.text,
@@ -403,7 +396,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(20)),
                           title: Text('Success!'),
                           content: Text(
-                              'Thank you for your donation of $amount $selectedCurrency!'),
+                              'Thank you for your donation of \$$amount!'),
                           actions: [
                             TextButton(
                               onPressed: () {
