@@ -18,119 +18,129 @@ class _FundPostPage2State extends State<FundPostPage2> {
   Widget build(BuildContext context) {
     final donationData = Provider.of<DonationProvider>(context, listen: false);
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.fromLTRB(
-          30,
-          MediaQuery.of(context).size.height * 0.05,
-          30,
-          MediaQuery.of(context).size.height * 0.05,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Image(
-              height: MediaQuery.of(context).size.height * 0.05,
-              image: AssetImage("imgs/logo.png"),
-            ),
-            Text(
-              "2 of 4",
-              style: TextStyle(
-                fontSize: 15,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w700,
-                color: Color(0xff333333),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            30,
+            MediaQuery.of(context).size.height * 0.05,
+            30,
+            MediaQuery.of(context).size.height * 0.05,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Image(
+                height: MediaQuery.of(context).size.height * 0.05,
+                image: AssetImage("imgs/logo.png"),
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "How much would you like to raise?",
-                  style: TextStyle(
-                    fontSize: 27,
-                    fontFamily: "Poppins",
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xff333333),
-                  ),
-                ),
-                Text(
-                  "You can always change your goal as you go",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: "Poppins",
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xff767676),
-                  ),
-                ),
-              ],
-            ),
-            Form(
-              child: TextFormField(
-                controller: goalController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.attach_money, color: Colors.black),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(color: Colors.grey, width: 2),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(color: Color(0xff02A95C), width: 3),
-                  ),
+              Text(
+                "2 of 4",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: "Poppins",
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff333333),
                 ),
               ),
-            ),
-            Text(
-              "Keep in mind that transaction fees, including credit card and debit charges, are deducted from each donation",
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w900,
-                color: Color(0xff767676),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Color(0xffE7F0F7),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "To recieve money raised, make sure the person withdrawing has:\n\nA US social security number\nA bank account and mailing address in one of the 50 states",
-                  style: TextStyle(
-                    color: Color(0xff333333),
-                    fontFamily: "Poppins",
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            LongButton(
-              text: "Continue",
-              action: () {
-                if (goalController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("You must set a donation goal"),
-                      backgroundColor: Colors.red,
-                      duration: Duration(seconds: 2),
+              SizedBox(height: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "How much would you like to raise?",
+                    style: TextStyle(
+                      fontSize: 27,
+                      fontFamily: "Poppins",
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xff333333),
                     ),
-                  );
-                } else {
-                  donationData.setGoal(int.parse(goalController.text));
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FundPostPage3()),
-                  );
-                }
-              },
-            ),
-          ],
+                  ),
+                  Text(
+                    "You can always change your goal as you go",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: "Poppins",
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xff767676),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+              Form(
+                child: TextFormField(
+                  controller: goalController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.attach_money, color: Colors.black),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(color: Colors.grey, width: 2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide(
+                        color: Color(0xff02A95C),
+                        width: 3,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                "Keep in mind that transaction fees, including credit card and debit charges, are deducted from each donation",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: "Poppins",
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xff767676),
+                ),
+              ),
+              SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  color: Color(0xffE7F0F7),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    "To recieve money raised, make sure the person withdrawing has:\n\nA US social security number\nA bank account and mailing address in one of the 50 states",
+                    style: TextStyle(
+                      color: Color(0xff333333),
+                      fontFamily: "Poppins",
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              LongButton(
+                text: "Continue",
+                action: () {
+                  if (goalController.text.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("You must set a donation goal"),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    donationData.setGoal(int.parse(goalController.text));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FundPostPage3()),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -32,97 +32,105 @@ class _FundPostPage3State extends State<FundPostPage3> {
   Widget build(BuildContext context) {
     final donationData = Provider.of<DonationProvider>(context, listen: false);
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 30,
-          vertical: MediaQuery.of(context).size.height * 0.05,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image(
-              height: MediaQuery.of(context).size.height * 0.05,
-              image: AssetImage("imgs/logo.png"),
-            ),
-            SizedBox(height: 25),
-            Text(
-              "3 of 4",
-              style: TextStyle(
-                fontSize: 15,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w700,
-                color: Color(0xff333333),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: 30,
+            vertical: MediaQuery.of(context).size.height * 0.05,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Image(
+                height: MediaQuery.of(context).size.height * 0.05,
+                image: AssetImage("imgs/logo.png"),
               ),
-            ),
-            SizedBox(height: 25),
+              SizedBox(height: 25),
+              Text(
+                "3 of 4",
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: "Poppins",
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xff333333),
+                ),
+              ),
+              SizedBox(height: 25),
 
-            Text(
-              "Add a cover photo",
-              style: TextStyle(
-                fontSize: 27,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w900,
-                color: Color(0xff333333),
+              Text(
+                "Add a cover photo",
+                style: TextStyle(
+                  fontSize: 27,
+                  fontFamily: "Poppins",
+                  fontWeight: FontWeight.w900,
+                  color: Color(0xff333333),
+                ),
               ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Using a bright and clear photo helps people connect to your fundraiser right away",
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: "Poppins",
-                fontWeight: FontWeight.w600,
-                color: Color(0xff767676),
+              SizedBox(height: 10),
+              Text(
+                "Using a bright and clear photo helps people connect to your fundraiser right away",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontFamily: "Poppins",
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xff767676),
+                ),
               ),
-            ),
-            SizedBox(height: 40),
-            image == null
-                ? Center(
-                    child: IconButton(
-                      onPressed: () {
-                        pickImage();
-                      },
-                      icon: Icon(Icons.add, color: Color(0xff02A95C), size: 60),
-                    ),
-                  )
-                : Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Center(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(
-                            image!,
-                            width: MediaQuery.of(context).size.width * 0.8,
-                            height: MediaQuery.of(context).size.height * 0.3,
-                            fit: BoxFit.cover,
-                          ),
+              SizedBox(height: 40),
+              image == null
+                  ? Center(
+                      child: IconButton(
+                        onPressed: () {
+                          pickImage();
+                        },
+                        icon: Icon(
+                          Icons.add,
+                          color: Color(0xff02A95C),
+                          size: 60,
                         ),
                       ),
-                    ],
-                  ),
-            Spacer(),
-            LongButton(
-              text: "Continue",
-              action: () {
-                if (image == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("You must pick a fundraiser cover picture"),
-                      backgroundColor: Colors.red,
-                      duration: Duration(seconds: 2),
+                    )
+                  : Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Center(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(
+                              image!,
+                              width: MediaQuery.of(context).size.width * 0.8,
+                              height: MediaQuery.of(context).size.height * 0.3,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                } else {
-                  donationData.setImage(pickedFile.path!);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => FundPostPage4()),
-                  );
-                }
-              },
-            ),
-          ],
+              SizedBox(height: MediaQuery.of(context).size.height * 0.3),
+              LongButton(
+                text: "Continue",
+                action: () {
+                  if (image == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "You must pick a fundraiser cover picture",
+                        ),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  } else {
+                    donationData.setImage(pickedFile.path!);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => FundPostPage4()),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
