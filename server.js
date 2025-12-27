@@ -50,7 +50,8 @@ app.patch("/api/fundings", async (req, res) => {
     }
     post.current_amount += amount;
     post.supporters_count++;
-    console.log("Updated post:", post);
+
+    // console.log("Updated post:", post);
     fs.writeFileSync(
       "./fund_bridge/data/fundings.json",
       JSON.stringify(posts, null, 2)
