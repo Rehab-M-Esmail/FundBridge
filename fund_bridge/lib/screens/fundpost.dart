@@ -70,7 +70,6 @@ class _FundPostPage1State extends State<FundPostPage1> {
                   children: [
                     Container(
                       width: MediaQuery.sizeOf(context).width,
-                      height: MediaQuery.sizeOf(context).height * 0.13,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
@@ -80,18 +79,17 @@ class _FundPostPage1State extends State<FundPostPage1> {
                           width: isChosen[0] ? 2 : 1,
                         ),
                       ),
-                      child: Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Image(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.13,
-                                image: AssetImage("imgs/Frame.png"),
-                              ),
-                              Column(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Image(
+                              height: MediaQuery.of(context).size.height * 0.13,
+                              image: AssetImage("imgs/Frame.png"),
+                            ),
+                            Expanded(
+                              child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -117,8 +115,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -137,7 +135,6 @@ class _FundPostPage1State extends State<FundPostPage1> {
                 },
                 child: Container(
                   width: MediaQuery.sizeOf(context).width,
-                  height: MediaQuery.sizeOf(context).height * 0.14,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
@@ -147,17 +144,17 @@ class _FundPostPage1State extends State<FundPostPage1> {
                       width: isChosen[1] ? 2 : 1,
                     ),
                   ),
-                  child: Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(7),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Image(
-                            height: MediaQuery.of(context).size.height * 0.13,
-                            image: AssetImage("imgs/hug.png"),
-                          ),
-                          Column(
+                  child: Padding(
+                    padding: const EdgeInsets.all(7),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image(
+                          height: MediaQuery.of(context).size.height * 0.13,
+                          image: AssetImage("imgs/hug.png"),
+                        ),
+                        Expanded(
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -182,8 +179,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -200,7 +197,6 @@ class _FundPostPage1State extends State<FundPostPage1> {
                 },
                 child: Container(
                   width: MediaQuery.sizeOf(context).width,
-                  height: MediaQuery.sizeOf(context).height * 0.14,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
@@ -210,17 +206,17 @@ class _FundPostPage1State extends State<FundPostPage1> {
                       width: isChosen[2] ? 2 : 1,
                     ),
                   ),
-                  child: Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Image(
-                            height: MediaQuery.of(context).size.height * 0.13,
-                            image: AssetImage("imgs/charity.png"),
-                          ),
-                          Column(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
+                    child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image(
+                          height: MediaQuery.of(context).size.height * 0.13,
+                          image: AssetImage("imgs/charity.png"),
+                        ),
+                        Expanded(
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -245,8 +241,8 @@ class _FundPostPage1State extends State<FundPostPage1> {
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
