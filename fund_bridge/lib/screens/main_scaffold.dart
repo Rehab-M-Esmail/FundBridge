@@ -7,7 +7,6 @@ import 'package:fund_bridge/screens/home.dart';
 import 'package:fund_bridge/screens/fundpost.dart';
 import 'package:fund_bridge/screens/login.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:fund_bridge/screens/donate.dart';
 
 class MainScaffold extends StatefulWidget {
   const MainScaffold({super.key});
@@ -33,7 +32,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     setState(() {
       final isLoggedIn = userId != null && userId.isNotEmpty && userId != 'null';
       if (isLoggedIn) {
-        pages = [Home(), FundPostPage1(), DonatePage()];
+        pages = [Home(), FundPostPage1(), donate()];
       } else {
         pages = [Home(), FundPostPage1(), Login()];
       }
