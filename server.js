@@ -49,6 +49,7 @@ app.patch("/api/fundings", async (req, res) => {
       return res.status(404).json({ error: "post not found" });
     }
     post.current_amount += amount;
+    post.supporters_count++;
     console.log("Updated post:", post);
     fs.writeFileSync(
       "./fund_bridge/data/fundings.json",
