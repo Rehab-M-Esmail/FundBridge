@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
+import 'package:fund_bridge/screens/donate.dart';
 import 'package:fund_bridge/services/donations.dart';
 import 'package:fund_bridge/services/userService.dart';
 
@@ -218,49 +219,73 @@ class _ProfilePageState extends State<ProfilePage> {
                       itemCount: items.length,
                       itemBuilder: (context, index) {
                         final c = items[index];
+                        final campaignId = c['id'];
                         final title = c['title']?.toString() ?? '';
                         final description = c['description']?.toString() ?? '';
                         final goal = c['donationGoal'];
                         final target = c['donationTarget']?.toString() ?? '';
                         final totalRaised = c['totalRaised'];
 
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  title,
-                                  style: TextStyle(
-                                    fontFamily: "Poppins",
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xff333333),
+                        return InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: campaignId is int
+                              ? () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          donate(campaignId: campaignId),
+                                    ),
+                                  );
+                                }
+                              : null,
+                          child: Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(14),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w900,
+                                      color: Color(0xff333333),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  description,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontFamily: "Poppins",
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xff767676),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    description,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xff767676),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        "Target: $target",
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          "Target: $target",
+                                          style: TextStyle(
+                                            fontFamily: "Poppins",
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: Color(0xff0D4715),
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        "Raised: ${totalRaised ?? 0}",
                                         style: TextStyle(
                                           fontFamily: "Poppins",
                                           fontSize: 12,
@@ -268,29 +293,20 @@ class _ProfilePageState extends State<ProfilePage> {
                                           color: Color(0xff0D4715),
                                         ),
                                       ),
-                                    ),
-                                    Text(
-                                      "Raised: ${totalRaised ?? 0}",
-                                      style: TextStyle(
-                                        fontFamily: "Poppins",
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w700,
-                                        color: Color(0xff0D4715),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Goal: ${goal ?? 0}",
-                                  style: TextStyle(
-                                    fontFamily: "Poppins",
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: Color(0xff0D4715),
+                                    ],
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    "Goal: ${goal ?? 0}",
+                                    style: TextStyle(
+                                      fontFamily: "Poppins",
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: Color(0xff0D4715),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );

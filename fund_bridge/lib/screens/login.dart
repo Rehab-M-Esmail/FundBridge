@@ -64,167 +64,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
             child: SlideTransition(
               position: _slideAnimation,
               child: Column(
-<<<<<<< HEAD
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Email address",
-                        style: TextStyle(
-                          color: Color(0xff6B8A88),
-                          fontFamily: "Poppins",
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    controller: email,
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return "Enter an email";
-                      }
-                    },
-                    style: TextStyle(
-                      color: Color(0xff0D4715),
-                      fontFamily: "Poppins",
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Color(0xffF1F0E9),
-                      isDense: true,
-                      prefixIcon: Icon(FontAwesomeIcons.envelope, size: 20),
-                      prefixIconColor: Color(0xff0D4715),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 18, 0, 8),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Password",
-                        style: TextStyle(
-                          color: Color(0xff6B8A88),
-                          fontFamily: "Poppins",
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                  ),
-                  TextFormField(
-                    obscureText: isPasswordVisible,
-                    controller: password,
-                    validator: (value) {
-                      if (value!.length < 6) {
-                        return "Password length must be at least 6 characters";
-                      }
-                    },
-                    style: TextStyle(
-                      color: Color(0xff0D4715),
-                      fontFamily: "Poppins",
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      filled: true,
-                      fillColor: Color(0xffF1F0E9),
-                      prefixIcon: Icon(FontAwesomeIcons.lock, size: 20),
-                      prefixIconColor: Color(0xff0D4715),
-                      suffixIcon: IconButton(
-                        onPressed: toggleVisibility,
-                        icon: Icon(
-                          isPasswordVisible
-                              ? FontAwesomeIcons.eye
-                              : FontAwesomeIcons.eyeSlash,
-                        ),
-                      ),
-                      suffixIconColor: Colors.lightGreen,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      contentPadding: EdgeInsets.fromLTRB(0, 8, 0, 0),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 24, 0, 16),
-              child: Container(
-                width: MediaQuery.of(context).size.width * 0.85,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 33, 185, 96),
-                      Color.fromARGB(255, 0, 255, 132),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (formKey.currentState == null ||
-                        !formKey.currentState!.validate()) {
-                      return;
-                    }
-                    final user = await userService.userLogin(
-                      email.text,
-                      password.text,
-                    );
-                    if (user != null) {
-                      await storage.write(key: 'USER_ID', value: user.toString());
-                      if (!context.mounted) return;
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        "/",
-                        (route) => false,
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text("User does not exist"),
-                          backgroundColor: Colors.red,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                  ),
-                  child: Text(
-                    "Log in",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.fromLTRB(0, 2, 0, 0),
-              child: Row(
-=======
->>>>>>> 290987a79a178dab5398c7e9e23dd9539feb90d2
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Hero(
                     tag: 'app_logo',
@@ -234,19 +74,14 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Welcome Back \nTo Fund Bridge!",
-                        style: TextStyle(
-                          fontFamily: "Poppins",
-                          fontSize: 35,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xff0D4715),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    "Welcome Back \nTo Fund Bridge!",
+                    style: TextStyle(
+                      fontFamily: "Poppins",
+                      fontSize: 35,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff0D4715),
+                    ),
                   ),
                   const SizedBox(height: 30),
                   Form(
@@ -287,13 +122,15 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                             filled: true,
                             fillColor: Color(0xffF1F0E9),
                             isDense: true,
-                            prefixIcon: Icon(FontAwesomeIcons.envelope, size: 20),
+                            prefixIcon:
+                                Icon(FontAwesomeIcons.envelope, size: 20),
                             prefixIconColor: Color(0xff0D4715),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 15),
                           ),
                         ),
                         Padding(
@@ -345,7 +182,8 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                               borderRadius: BorderRadius.circular(20),
                               borderSide: BorderSide.none,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 15),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 15),
                           ),
                         ),
                       ],
@@ -376,22 +214,35 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                       ),
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (formKey.currentState!.validate()) {
-                            final user = await userService.userLogin(
-                              email.text,
-                              password.text,
+                          if (formKey.currentState == null ||
+                              !formKey.currentState!.validate()) {
+                            return;
+                          }
+
+                          final user = await userService.userLogin(
+                            email.text,
+                            password.text,
+                          );
+                          if (user != null) {
+                            await storage.write(
+                              key: 'USER_ID',
+                              value: user.toString(),
                             );
-                            if (user != null) {
-                              Navigator.pushNamed(context, "/");
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text("User does not exist"),
-                                  backgroundColor: Colors.red,
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            }
+                            if (!mounted) return;
+                            Navigator.pushNamedAndRemoveUntil(
+                              context,
+                              "/",
+                              (route) => false,
+                            );
+                          } else {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("User does not exist"),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -402,7 +253,7 @@ class _LoginState extends State<Login> with SingleTickerProviderStateMixin {
                           ),
                         ),
                         child: const Text(
-                          "Login",
+                          "Log in",
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,

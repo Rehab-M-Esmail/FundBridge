@@ -33,11 +33,7 @@ class _MainScaffoldState extends State<MainScaffold> {
     setState(() {
       final isLoggedIn = userId != null && userId.isNotEmpty && userId != 'null';
       if (isLoggedIn) {
-<<<<<<< HEAD
         pages = [Home(), FundPostPage1(), ProfilePage()];
-=======
-        pages = [Home(), FundPostPage1(), donate()];
->>>>>>> 290987a79a178dab5398c7e9e23dd9539feb90d2
       } else {
         pages = [Home(), FundPostPage1(), Login()];
       }
