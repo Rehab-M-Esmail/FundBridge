@@ -44,12 +44,12 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   late Future<List<Funding>> fundings;
 
   Future<List<Funding>> fetchFundings() async {
     final response = await http.get(
-      Uri.parse('http://localhost:8000/api/fundings'),
+      Uri.parse('http://192.168.1.4:8000/api/fundings'),
     );
 
     if (response.statusCode == 200) {
@@ -87,9 +87,12 @@ class _HomeState extends State<Home> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image(
-                  height: MediaQuery.of(context).size.height * 0.05,
-                  image: AssetImage("imgs/logo.png"),
+                Hero(
+                  tag: 'app_logo',
+                  child: Image(
+                    height: MediaQuery.of(context).size.height * 0.05,
+                    image: AssetImage("imgs/logo.png"),
+                  ),
                 ),
                 Text(
                   "Search",
@@ -101,66 +104,101 @@ class _HomeState extends State<Home> {
                   ),
                 ),
                 CupertinoSearchTextField(),
+                const SizedBox(height: 10),
                 Expanded(
                   child: ListView.builder(
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final fund = items[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 15),
-                        child: ListTile(
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(8.0),
-                            child: Image.network(
-                              fund.image,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const CircleAvatar(
-                                  backgroundColor: Colors.indigoAccent,
-                                  child: Icon(
-                                    Icons.trending_up,
-                                    color: Colors.white,
-                                  ),
-                                );
-                              },
+                      return TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: Duration(milliseconds: 400 + (index * 100)),
+                        builder: (context, value, child) {
+                          return Opacity(
+                            opacity: value,
+                            child: Transform.translate(
+                              offset: Offset(0, 50 * (1 - value)),
+                              child: child,
                             ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          title: Text(
-                            fund.title,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontFamily: "Poppins",
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xff333333),
-                            ),
-                          ),
-                          subtitle: Text(fund.author),
-                          trailing: Text(
-                            "\$${fund.fundingAmount}",
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          onTap: () {
-                            // Navigate to donate page with campaign data
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => donate(
-                                  campaignData: {
-                                    'id': fund.id,
-                                    'title': fund.title,
-                                    'description': fund.description,
-                                    'donationGoal': fund.fundingAmount,
-                                    'currentAmount': fund.currentAmount,
-                                    'image': fund.image,
-                                    'author': fund.author,
-                                    'category': fund.category,
+                          margin: const EdgeInsets.only(bottom: 15),
+                          child: ListTile(
+                            leading: Hero(
+                              tag: 'fund_image_${fund.id}',
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8.0),
+                                child: Image.network(
+                                  fund.image,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const CircleAvatar(
+                                      backgroundColor: Colors.indigoAccent,
+                                      child: Icon(
+                                        Icons.trending_up,
+                                        color: Colors.white,
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
-                            );
-                          },
+                            ),
+                            title: Text(
+                              fund.title,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontFamily: "Poppins",
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xff333333),
+                              ),
+                            ),
+                            subtitle: Text(fund.author),
+                            trailing: Text(
+                              "\$${fund.fundingAmount}",
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xff008748)),
+                            ),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  transitionDuration:
+                                      const Duration(milliseconds: 500),
+                                  reverseTransitionDuration:
+                                      const Duration(milliseconds: 500),
+                                  pageBuilder: (context, animation,
+                                          secondaryAnimation) =>
+                                      donate(
+                                    campaignData: {
+                                      'id': fund.id,
+                                      'title': fund.title,
+                                      'description': fund.description,
+                                      'donationGoal': fund.fundingAmount,
+                                      'currentAmount': fund.currentAmount,
+                                      'image': fund.image,
+                                      'author': fund.author,
+                                      'category': fund.category,
+                                    },
+                                  ),
+                                  transitionsBuilder: (context, animation,
+                                      secondaryAnimation, child) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       );
                     },

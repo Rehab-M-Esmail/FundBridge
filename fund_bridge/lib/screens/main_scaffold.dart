@@ -16,7 +16,7 @@ class MainScaffold extends StatefulWidget {
 }
 
 class _MainScaffoldState extends State<MainScaffold> {
-  List pages = [Home(), FundPostPage1(), Login()];
+  List<Widget> pages = [Home(), FundPostPage1(), Login()];
   int index = 0;
   bool isLoaded = false;
   final storage = FlutterSecureStorage();
@@ -43,9 +43,21 @@ class _MainScaffoldState extends State<MainScaffold> {
     loadUser();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: !isLoaded ? CupertinoActivityIndicator() : pages[index],
+      body: !isLoaded
+          ? Center(child: CupertinoActivityIndicator())
+          : AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: child,
+                );
+              },
+              child: pages[index],
+            ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: ClipRRect(
@@ -70,9 +82,18 @@ class _MainScaffoldState extends State<MainScaffold> {
                 });
               },
               tabs: [
-                GButton(icon: FontAwesomeIcons.house),
-                GButton(icon: FontAwesomeIcons.heart),
-                GButton(icon: FontAwesomeIcons.user),
+                GButton(
+                  icon: FontAwesomeIcons.house,
+                  text: 'Home',
+                ),
+                GButton(
+                  icon: FontAwesomeIcons.heart,
+                  text: 'Fund',
+                ),
+                GButton(
+                  icon: FontAwesomeIcons.user,
+                  text: 'Profile',
+                ),
               ],
             ),
           ),
