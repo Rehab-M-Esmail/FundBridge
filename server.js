@@ -12,6 +12,13 @@ function readFundings() {
   return JSON.parse(data);
 }
 
+function writeFundings(fundings) {
+  fs.writeFileSync(
+    "./fund_bridge/data/fundings.json",
+    JSON.stringify(fundings, null, 2)
+  );
+}
+
 // GET: Return all funding items
 app.get("/api/fundings", (req, res) => {
   try {
@@ -32,6 +39,38 @@ app.get("/api/fundings/:id", (req, res) => {
     res.json(item);
   } catch (err) {
     res.status(500).json({ error: "Error reading data" });
+  }
+});
+
+app.post("/api/fundings", (req, res) => {
+  try {
+    const fundings = readFundings();
+
+    // Generate new ID Increamentally
+    const maxId =
+      fundings.length > 0 ? Math.max(...fundings.map((f) => f.id)) : 0;
+    const newId = maxId + 1;
+    const newPost = {
+      id: newId,
+      title: req.body.title,
+      author: req.body.author,
+      description: req.body.description,
+      goal_amount: req.body.goal_amount,
+      current_amount: 0,
+      image: req.body.image,
+      category: req.body.category,
+      location: req.body.location,
+      created_at: new Date().toISOString().split("T")[0],
+      supporters_count: 0,
+    };
+    fundings.push(newPost);
+    writeFundings(fundings);
+
+    console.log("Created new post with ID:", newId);
+    res.status(201).json(newPost);
+  } catch (err) {
+    console.error("Error creating post:", err);
+    res.status(500).json({ error: "Error creating funding post" });
   }
 });
 

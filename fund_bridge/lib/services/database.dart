@@ -30,10 +30,16 @@ class DatabaseService {
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
       },
+
       onUpgrade: (db, oldVersion, newVersion) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
+        // Set donations (posts) ID auto-increment to start from 21
+        await db.execute(
+          "INSERT INTO sqlite_sequence (name, seq) VALUES ('donations', 20)",
+        );
+
         try {
           await db.execute("ALTER TABLE user ADD COLUMN profileImage TEXT;");
         } catch (_) {}

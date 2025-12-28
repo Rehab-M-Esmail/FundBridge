@@ -4,6 +4,8 @@ import 'package:fund_bridge/services/donations.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fund_bridge/services/userService.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class donate extends StatefulWidget {
   final int? campaignId;
@@ -67,29 +69,58 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // --- MERGED & UPDATED LOAD FUNCTION ---
   Future<void> loadCampaignData() async {
+    // Case 1: Data passed via Constructor (Fast Load)
     if (widget.campaignData != null) {
+      // 1. Show the passed data IMMEDIATELY
       setState(() {
         campaign = widget.campaignData;
         raisedAmount = campaign!['currentAmount'] ?? 0;
         isLoading = false;
         if (campaign?['id'] != null) {
-          _donationHistoryFuture =
-              donationsService.getDonationHistoryWithUser(campaign!['id']);
+          _donationHistoryFuture = donationsService.getDonationHistoryWithUser(
+            campaign!['id'],
+          );
         }
       });
       _contentController.forward();
-    } else if (widget.campaignId != null) {
+
+      // 2. BACKGROUND REFRESH (The Fix)
+      // Fetch fresh data from server to ensure 'raisedAmount' is actually current
+      try {
+        if (campaign?['id'] != null) {
+          final freshData = await donationsService.getDonationById(
+            campaign!['id'],
+          );
+          if (freshData != null && mounted) {
+            setState(() {
+              // Update local campaign object with fresh data
+              campaign = freshData;
+              // Update the raised amount with the server's truth
+              raisedAmount = (freshData['currentAmount'] ?? 0).toInt();
+            });
+          }
+        }
+      } catch (e) {
+        print("Error fetching fresh campaign data: $e");
+      }
+    }
+    // Case 2: Only ID passed (Must Load first)
+    else if (widget.campaignId != null) {
       final data = await donationsService.getDonationById(widget.campaignId!);
-      final raised =
-          await donationsService.getTotalRaisedAmount(widget.campaignId!);
+
       setState(() {
         campaign = data;
-        raisedAmount = raised;
+        // ALWAYS use server's currentAmount if available
+        raisedAmount = (data != null && data['currentAmount'] != null)
+            ? data['currentAmount'].toInt()
+            : 0;
         isLoading = false;
         if (campaign?['id'] != null) {
-          _donationHistoryFuture =
-              donationsService.getDonationHistoryWithUser(campaign!['id']);
+          _donationHistoryFuture = donationsService.getDonationHistoryWithUser(
+            campaign!['id'],
+          );
         }
       });
       _contentController.forward();
@@ -103,19 +134,10 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
   void _reloadDonationHistory() {
     if (campaign?['id'] == null) return;
     setState(() {
-      _donationHistoryFuture =
-          donationsService.getDonationHistoryWithUser(campaign!['id']);
+      _donationHistoryFuture = donationsService.getDonationHistoryWithUser(
+        campaign!['id'],
+      );
     });
-  }
-
-  Future<void> loadRaisedAmount() async {
-    if (campaign != null && campaign!['id'] != null) {
-      final raised =
-          await donationsService.getTotalRaisedAmount(campaign!['id']);
-      setState(() {
-        raisedAmount = raised;
-      });
-    }
   }
 
   @override
@@ -180,22 +202,30 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                       future: _userFuture,
                       builder: (context, snapshot) {
                         final user = snapshot.data;
-                        final profileImagePath = user?['profileImage']?.toString();
-                        final hasProfileImage = profileImagePath != null &&
+                        final profileImagePath = user?['profileImage']
+                            ?.toString();
+                        final hasProfileImage =
+                            profileImagePath != null &&
                             profileImagePath.isNotEmpty &&
                             File(profileImagePath).existsSync();
 
-                        final profileImageFile =
-                            hasProfileImage ? File(profileImagePath!) : null;
+                        final profileImageFile = hasProfileImage
+                            ? File(profileImagePath!)
+                            : null;
 
                         return CircleAvatar(
                           radius: 40,
                           backgroundColor: Color(0xff008748),
-                          backgroundImage:
-                              profileImageFile != null ? FileImage(profileImageFile) : null,
+                          backgroundImage: profileImageFile != null
+                              ? FileImage(profileImageFile)
+                              : null,
                           child: hasProfileImage
                               ? null
-                              : Icon(Icons.person, size: 40, color: Colors.white),
+                              : Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: Colors.white,
+                                ),
                         );
                       },
                     ),
@@ -220,13 +250,29 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(20),
-                      child: campaign!['image'] != null &&
-                              campaign!['image'] != ''
-                          ? Image.network(
-                              campaign!['image'],
+                      child: Builder(
+                        builder: (context) {
+                          final raw = campaign?['image']?.toString() ?? '';
+                          final imagePathOrUrl = raw.trim();
+
+                          if (imagePathOrUrl.isEmpty) {
+                            return const Icon(
+                              Icons.image,
+                              size: 60,
+                              color: Color(0xff767676),
+                            );
+                          }
+
+                          final isRemote = imagePathOrUrl.startsWith('http://') ||
+                              imagePathOrUrl.startsWith('https://');
+
+                          if (isRemote) {
+                            return Image.network(
+                              imagePathOrUrl,
                               fit: BoxFit.cover,
                               width: MediaQuery.of(context).size.width,
-                              loadingBuilder: (context, child, loadingProgress) {
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
                                 if (loadingProgress == null) return child;
                                 return Center(
                                   child: CircularProgressIndicator(
@@ -239,11 +285,38 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                                 );
                               },
                               errorBuilder: (context, error, stackTrace) {
-                                return Icon(Icons.image,
-                                    size: 60, color: Color(0xff767676));
+                                return const Icon(
+                                  Icons.image,
+                                  size: 60,
+                                  color: Color(0xff767676),
+                                );
                               },
-                            )
-                          : Icon(Icons.image, size: 60, color: Color(0xff767676)),
+                            );
+                          }
+
+                          final file = File(imagePathOrUrl);
+                          if (!file.existsSync()) {
+                            return const Icon(
+                              Icons.image,
+                              size: 60,
+                              color: Color(0xff767676),
+                            );
+                          }
+
+                          return Image.file(
+                            file,
+                            fit: BoxFit.cover,
+                            width: MediaQuery.of(context).size.width,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.image,
+                                size: 60,
+                                color: Color(0xff767676),
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
@@ -313,14 +386,20 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                 Row(
                   children: [
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(color: Colors.grey),
                       ),
                       child: Text(
                         "\$",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     SizedBox(width: 10),
@@ -354,13 +433,17 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                   value: selectedPayment,
                   isExpanded: true,
                   items:
-                      ['Credit Card', 'Debit Card', 'PayPal', 'Bank Transfer']
-                          .map((method) {
-                    return DropdownMenuItem(
-                      value: method,
-                      child: Text(method),
-                    );
-                  }).toList(),
+                      [
+                        'Credit Card',
+                        'Debit Card',
+                        'PayPal',
+                        'Bank Transfer',
+                      ].map((method) {
+                        return DropdownMenuItem(
+                          value: method,
+                          child: Text(method),
+                        );
+                      }).toList(),
                   onChanged: (value) {
                     setState(() {
                       selectedPayment = value!;
@@ -443,6 +526,18 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                     }
 
                     try {
+                      // 1. Optimistic Update (Immediate UI change)
+                      int previousTotal = raisedAmount;
+                      int optimisticTotal = previousTotal + amount.toInt();
+
+                      setState(() {
+                        raisedAmount = optimisticTotal;
+                        if (campaign != null) {
+                          campaign!['currentAmount'] = optimisticTotal;
+                        }
+                      });
+
+                      // 2. Save locally
                       await donationsService.saveDonation(
                         campaignId: campaign!['id'],
                         donorId: userId,
@@ -453,17 +548,81 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         comment: commentController.text,
                       );
 
-                      await loadRaisedAmount();
+                      // 3. Call API to update server
+                      try {
+                        final apiUrl = Uri.parse(
+                          'http://192.168.1.4:8000/api/fundings',
+                        );
+                        final response = await http.patch(
+                          apiUrl,
+                          headers: {'Content-Type': 'application/json'},
+                          body: jsonEncode({
+                            'id': campaign!['id'],
+                            'amount': amount,
+                          }),
+                        );
+
+                        if (response.statusCode == 200) {
+                          final responseData = jsonDecode(response.body);
+                          print("API Response: $responseData");
+
+                          // Search for the total amount key in response
+                          var serverTotalRaw =
+                              responseData['currentAmount'] ??
+                              responseData['current_amount'] ??
+                              responseData['raised'] ??
+                              responseData['raisedAmount'];
+
+                          // Nested 'data' check
+                          if (serverTotalRaw == null &&
+                              responseData['data'] != null) {
+                            final inner = responseData['data'];
+                            serverTotalRaw =
+                                inner['currentAmount'] ??
+                                inner['current_amount'];
+                          }
+
+                          // 4. Intelligent Overwrite
+                          // Only overwrite UI if server returns a plausible TOTAL (greater than current donation)
+                          if (serverTotalRaw != null) {
+                            double serverTotal =
+                                double.tryParse(serverTotalRaw.toString()) ??
+                                0.0;
+
+                            if (serverTotal > amount) {
+                              setState(() {
+                                raisedAmount = serverTotal.toInt();
+                                if (campaign != null) {
+                                  campaign!['currentAmount'] = raisedAmount;
+                                }
+                              });
+                            } else {
+                              print(
+                                "Server returned a value ($serverTotal) smaller or equal to donation. Keeping optimistic total.",
+                              );
+                            }
+                          }
+                        } else {
+                          print(
+                            'Failed to update server: ${response.statusCode}',
+                          );
+                        }
+                      } catch (apiError) {
+                        print('Error calling API: $apiError');
+                      }
+
                       _reloadDonationHistory();
 
                       showDialog(
                         context: context,
                         builder: (context) => AlertDialog(
                           shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20)),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
                           title: Text('Success!'),
                           content: Text(
-                              'Thank you for your donation of \$$amount!'),
+                            'Thank you for your donation of \$$amount!',
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () {
@@ -474,8 +633,10 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                                   isAnonymous = false;
                                 });
                               },
-                              child: Text('OK',
-                                  style: TextStyle(color: Color(0xff008748))),
+                              child: Text(
+                                'OK',
+                                style: TextStyle(color: Color(0xff008748)),
+                              ),
                             ),
                           ],
                         ),
@@ -537,12 +698,16 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         final row = history[index];
                         final isAnon = (row['isAnonymous'] as int?) == 1;
                         final donorNameRaw = row['donorName']?.toString() ?? '';
-                        final donorName =
-                            isAnon ? 'Anonymous' : (donorNameRaw.isNotEmpty ? donorNameRaw : 'Unknown');
+                        final donorName = isAnon
+                            ? 'Anonymous'
+                            : (donorNameRaw.isNotEmpty
+                                  ? donorNameRaw
+                                  : 'Unknown');
 
-                        final donorProfileImagePath =
-                            row['donorProfileImage']?.toString();
-                        final hasProfileImage = !isAnon &&
+                        final donorProfileImagePath = row['donorProfileImage']
+                            ?.toString();
+                        final hasProfileImage =
+                            !isAnon &&
                             donorProfileImagePath != null &&
                             donorProfileImagePath.isNotEmpty &&
                             File(donorProfileImagePath).existsSync();
@@ -568,8 +733,11 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                                     : null,
                                 child: hasProfileImage
                                     ? null
-                                    : Icon(Icons.person,
-                                        size: 18, color: Colors.white),
+                                    : Icon(
+                                        Icons.person,
+                                        size: 18,
+                                        color: Colors.white,
+                                      ),
                               ),
                               SizedBox(width: 10),
                               Expanded(
