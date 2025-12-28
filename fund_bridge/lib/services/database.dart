@@ -3,8 +3,7 @@ import 'package:path/path.dart';
 
 class DatabaseService {
   static Database? db;
-  static final DatabaseService instance =
-      DatabaseService._constructor(); // implements singleton pattern
+  static final DatabaseService instance = DatabaseService._constructor();
   DatabaseService._constructor();
 
   final String userTable = "user";
@@ -24,24 +23,17 @@ class DatabaseService {
     final databasePath = join(databaseDirPath, "fundBridge.db");
     final database = await openDatabase(
       databasePath,
-      version: 11, // Bumped to 11 to force upgrade logic
+      version: 12,
       onCreate: (db, version) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
-        
-        // Prime the ID counter to 21
         await _primeDonationsId(db);
       },
-
       onUpgrade: (db, oldVersion, newVersion) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
-        
-        if (oldVersion < 11) {
-           await _primeDonationsId(db);
-        }
 
         try {
           await db.execute("ALTER TABLE user ADD COLUMN profileImage TEXT;");
@@ -52,17 +44,12 @@ class DatabaseService {
   }
 
   Future<void> _primeDonationsId(Database db) async {
-    // Check if table is empty or has IDs less than 20
     final result = await db.rawQuery("SELECT MAX(id) as max_id FROM $donationsTable");
     int maxId = (result.first['max_id'] as int?) ?? 0;
-    
+
     if (maxId < 20) {
-      // Manually insert a record with ID 20 and then delete it
-      // This forces the internal SQLite counter to 20
       await db.execute("INSERT INTO $donationsTable (id, title) VALUES (20, 'System Init')");
       await db.execute("DELETE FROM $donationsTable WHERE id = 20");
-      
-      // Also update the sequence table as a backup
       await db.execute("INSERT OR REPLACE INTO sqlite_sequence (name, seq) VALUES ('$donationsTable', 20)");
     }
   }

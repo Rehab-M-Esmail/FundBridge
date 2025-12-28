@@ -24,7 +24,14 @@ class DonationsService {
 
   Future getAllDonations() async {
     final db = await databaseService.database;
-    final result = await db.query(databaseService.donationsTable);
+    final campaigns = await db.query(databaseService.donationsTable);
+    
+    final result = <Map<String, dynamic>>[];
+    for (final c in campaigns) {
+      final id = c['id'] as int;
+      final totalRaised = await getTotalRaisedAmount(id);
+      result.add({...c, 'currentAmount': totalRaised});
+    }
     return result;
   }
 
@@ -44,8 +51,12 @@ class DonationsService {
       where: 'id = ?',
       whereArgs: [donationId],
     );
+    
     if (result.isNotEmpty) {
-      return result.first;
+      final campaign = Map<String, dynamic>.from(result.first);
+      final totalRaised = await getTotalRaisedAmount(donationId);
+      campaign['currentAmount'] = totalRaised;
+      return campaign;
     }
     return null;
   }
@@ -137,9 +148,9 @@ ORDER BY dh.donatedAt DESC
       final id = c['id'];
       if (id is int) {
         final totalRaised = await getTotalRaisedAmount(id);
-        result.add({...c, 'totalRaised': totalRaised});
+        result.add({...c, 'currentAmount': totalRaised});
       } else {
-        result.add({...c, 'totalRaised': 0});
+        result.add({...c, 'currentAmount': 0});
       }
     }
     return result;

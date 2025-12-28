@@ -72,7 +72,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
   Future<void> loadCampaignData() async {
     if (widget.campaignData != null) {
       setState(() {
-        // Create a MUTABLE copy
         campaign = Map<String, dynamic>.from(widget.campaignData!);
         raisedAmount = campaign!['currentAmount'] ?? 0;
         isLoading = false;
@@ -91,7 +90,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
           );
           if (freshData != null && mounted) {
             setState(() {
-              // Create a MUTABLE copy
               campaign = Map<String, dynamic>.from(freshData);
               raisedAmount = (campaign!['currentAmount'] ?? 0).toInt();
             });
@@ -105,7 +103,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
       final data = await donationsService.getDonationById(widget.campaignId!);
 
       setState(() {
-        // Create a MUTABLE copy
         campaign = data != null ? Map<String, dynamic>.from(data) : null;
         raisedAmount = (campaign != null && campaign!['currentAmount'] != null)
             ? campaign!['currentAmount'].toInt()
@@ -166,6 +163,8 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
         ),
       );
     }
+
+    int goal = (campaign!['donationGoal'] ?? 0).toInt();
 
     return Scaffold(
       body: Padding(
@@ -345,7 +344,7 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         ),
                       ),
                       Text(
-                        "Goal: \$${campaign!['donationGoal']?.toString() ?? '0'}",
+                        "Goal: \$$goal",
                         style: TextStyle(
                           fontSize: 16,
                           fontFamily: "Roboto",
@@ -519,8 +518,32 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                       return;
                     }
 
+                    // --- GOAL VALIDATION ---
+                    int remaining = goal - raisedAmount;
+                    if (remaining <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('This campaign has already reached its goal!'),
+                          backgroundColor: Colors.orange,
+                        ),
+                      );
+                      return;
+                    }
+
+                    if (amount > remaining) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Donation exceeds goal. Max allowed: \$$remaining'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      // Suggest the max amount
+                      amountController.text = remaining.toString();
+                      return;
+                    }
+                    // -----------------------
+
                     try {
-                      // 1. Optimistic Update (Immediate UI change)
                       int previousTotal = raisedAmount;
                       int optimisticTotal = previousTotal + amount.toInt();
 
@@ -531,7 +554,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         }
                       });
 
-                      // 2. Save locally
                       await donationsService.saveDonation(
                         campaignId: campaign!['id'],
                         donorId: userId,
@@ -542,7 +564,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                         comment: commentController.text,
                       );
 
-                      // 3. Call API to update server
                       try {
                         final apiUrl = Uri.parse(
                           'http://192.168.1.4:8000/api/fundings',
@@ -558,35 +579,18 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
 
                         if (response.statusCode == 200) {
                           final responseData = jsonDecode(response.body);
-                          print("API Response: $responseData");
-
-                          var serverTotalRaw =
-                              responseData['currentAmount'] ??
-                              responseData['current_amount'] ??
-                              responseData['raised'] ??
-                              responseData['raisedAmount'];
-
-                          if (serverTotalRaw == null &&
-                              responseData['data'] != null) {
-                            final inner = responseData['data'];
-                            serverTotalRaw =
-                                inner['currentAmount'] ??
-                                inner['current_amount'];
-                          }
+                          var serverTotalRaw = responseData['currentAmount'] ??
+                              responseData['current_amount'];
 
                           if (serverTotalRaw != null) {
                             double serverTotal =
-                                double.tryParse(serverTotalRaw.toString()) ??
-                                0.0;
-
-                            if (serverTotal > amount) {
-                              setState(() {
-                                raisedAmount = serverTotal.toInt();
-                                if (campaign != null) {
-                                  campaign!['currentAmount'] = raisedAmount;
-                                }
-                              });
-                            }
+                                double.tryParse(serverTotalRaw.toString()) ?? 0.0;
+                            setState(() {
+                              raisedAmount = serverTotal.toInt();
+                              if (campaign != null) {
+                                campaign!['currentAmount'] = raisedAmount;
+                              }
+                            });
                           }
                         }
                       } catch (apiError) {
