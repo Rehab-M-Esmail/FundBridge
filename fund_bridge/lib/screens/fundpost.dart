@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fund_bridge/providers/donationProvider.dart';
 import 'package:fund_bridge/reusable-widgets/longButton.dart';
 import 'package:fund_bridge/screens/fundpost2.dart';
+import 'package:location/location.dart';
 import 'package:provider/provider.dart';
 
 class FundPostPage1 extends StatefulWidget {
@@ -13,6 +14,35 @@ class FundPostPage1 extends StatefulWidget {
 
 class _FundPostPage1State extends State<FundPostPage1> {
   String donationTarget = '';
+  Location location = Location();
+  bool serviceEnabled = false;
+  PermissionStatus? permissionGranted;
+  LocationData? locationData;
+
+  void initLocation() async {
+    serviceEnabled = await location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await location.requestService();
+      if (serviceEnabled) {
+        return;
+      }
+    }
+    permissionGranted = await location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
+    locationData = await location.getLocation();
+    setState(() {});
+    print(locationData.toString());
+  }
+
+  void initState() {
+    super.initState();
+    initLocation();
+  }
 
   @override
   List<bool> isChosen = [false, false, false];
@@ -65,7 +95,6 @@ class _FundPostPage1State extends State<FundPostPage1> {
                   });
                   donationTarget = 'self-donation';
                 },
-
                 child: Column(
                   children: [
                     Container(
@@ -209,7 +238,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                     child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Image(
                           height: MediaQuery.of(context).size.height * 0.13,
