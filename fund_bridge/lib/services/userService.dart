@@ -23,7 +23,11 @@ class UserService {
       where: "email = ?",
       whereArgs: [email],
     );
-    return result.isNotEmpty ? result.first['id'] : null;
+    if (result.isNotEmpty) {
+      final id = result.first['id'];
+      return id as int?;
+    }
+    return null;
   }
 
   Future<Map<String, dynamic>?> getUserById(int id) async {
@@ -46,7 +50,11 @@ class UserService {
       where: "email = ? AND password = ?",
       whereArgs: [email, password],
     );
-    return result.isNotEmpty ? result.first['id'] : null;
+    if (result.isNotEmpty) {
+      final id = result.first['id'];
+      return id as int?;
+    }
+    return null;
   }
 
   Future<int> updateProfileImage({

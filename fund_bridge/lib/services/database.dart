@@ -11,34 +11,37 @@ class DatabaseService {
   final String donationsTable = "donations";
   final String donationHistoryTable = "donation_history";
 
-  Future get database async {
+  Future<Database> get database async {
     if (db != null) {
-      return db;
+      return db!;
     }
     db = await getDatabase();
-    return db;
+    return db!;
   }
 
-  Future getDatabase() async {
+  Future<Database> getDatabase() async {
     final databaseDirPath = await getDatabasesPath();
     final databasePath = join(databaseDirPath, "fundBridge.db");
     final database = await openDatabase(
       databasePath,
-      version: 8,
+      version: 11, // Bumped to 11 to force upgrade logic
       onCreate: (db, version) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
+        
+        // Prime the ID counter to 21
+        await _primeDonationsId(db);
       },
 
       onUpgrade: (db, oldVersion, newVersion) async {
         await createUserTableIfNotExists(db);
         await createDonationsTableIfNotExists(db);
         await createDonationHistoryTableIfNotExists(db);
-        // Set donations (posts) ID auto-increment to start from 21
-        await db.execute(
-          "INSERT INTO sqlite_sequence (name, seq) VALUES ('donations', 20)",
-        );
+        
+        if (oldVersion < 11) {
+           await _primeDonationsId(db);
+        }
 
         try {
           await db.execute("ALTER TABLE user ADD COLUMN profileImage TEXT;");
@@ -48,8 +51,24 @@ class DatabaseService {
     return database;
   }
 
+  Future<void> _primeDonationsId(Database db) async {
+    // Check if table is empty or has IDs less than 20
+    final result = await db.rawQuery("SELECT MAX(id) as max_id FROM $donationsTable");
+    int maxId = (result.first['max_id'] as int?) ?? 0;
+    
+    if (maxId < 20) {
+      // Manually insert a record with ID 20 and then delete it
+      // This forces the internal SQLite counter to 20
+      await db.execute("INSERT INTO $donationsTable (id, title) VALUES (20, 'System Init')");
+      await db.execute("DELETE FROM $donationsTable WHERE id = 20");
+      
+      // Also update the sequence table as a backup
+      await db.execute("INSERT OR REPLACE INTO sqlite_sequence (name, seq) VALUES ('$donationsTable', 20)");
+    }
+  }
+
   Future createUserTableIfNotExists(Database db) async {
-    await db.execute('''CREATE TABLE IF NOT EXISTS ${userTable} (
+    await db.execute('''CREATE TABLE IF NOT EXISTS $userTable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT NOT NULL,
         name TEXT NOT NULL,
@@ -59,7 +78,7 @@ class DatabaseService {
   }
 
   Future createDonationsTableIfNotExists(Database db) async {
-    await db.execute('''CREATE TABLE IF NOT EXISTS ${donationsTable} (
+    await db.execute('''CREATE TABLE IF NOT EXISTS $donationsTable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         userId INTEGER,
         donationTarget TEXT,
@@ -72,7 +91,7 @@ class DatabaseService {
   }
 
   Future createDonationHistoryTableIfNotExists(Database db) async {
-    await db.execute('''CREATE TABLE IF NOT EXISTS ${donationHistoryTable} (
+    await db.execute('''CREATE TABLE IF NOT EXISTS $donationHistoryTable (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         campaignId INTEGER,
         donorId INTEGER,

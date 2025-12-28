@@ -69,13 +69,11 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
     super.dispose();
   }
 
-  // --- MERGED & UPDATED LOAD FUNCTION ---
   Future<void> loadCampaignData() async {
-    // Case 1: Data passed via Constructor (Fast Load)
     if (widget.campaignData != null) {
-      // 1. Show the passed data IMMEDIATELY
       setState(() {
-        campaign = widget.campaignData;
+        // Create a MUTABLE copy
+        campaign = Map<String, dynamic>.from(widget.campaignData!);
         raisedAmount = campaign!['currentAmount'] ?? 0;
         isLoading = false;
         if (campaign?['id'] != null) {
@@ -86,8 +84,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
       });
       _contentController.forward();
 
-      // 2. BACKGROUND REFRESH (The Fix)
-      // Fetch fresh data from server to ensure 'raisedAmount' is actually current
       try {
         if (campaign?['id'] != null) {
           final freshData = await donationsService.getDonationById(
@@ -95,10 +91,9 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
           );
           if (freshData != null && mounted) {
             setState(() {
-              // Update local campaign object with fresh data
-              campaign = freshData;
-              // Update the raised amount with the server's truth
-              raisedAmount = (freshData['currentAmount'] ?? 0).toInt();
+              // Create a MUTABLE copy
+              campaign = Map<String, dynamic>.from(freshData);
+              raisedAmount = (campaign!['currentAmount'] ?? 0).toInt();
             });
           }
         }
@@ -106,15 +101,14 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
         print("Error fetching fresh campaign data: $e");
       }
     }
-    // Case 2: Only ID passed (Must Load first)
     else if (widget.campaignId != null) {
       final data = await donationsService.getDonationById(widget.campaignId!);
 
       setState(() {
-        campaign = data;
-        // ALWAYS use server's currentAmount if available
-        raisedAmount = (data != null && data['currentAmount'] != null)
-            ? data['currentAmount'].toInt()
+        // Create a MUTABLE copy
+        campaign = data != null ? Map<String, dynamic>.from(data) : null;
+        raisedAmount = (campaign != null && campaign!['currentAmount'] != null)
+            ? campaign!['currentAmount'].toInt()
             : 0;
         isLoading = false;
         if (campaign?['id'] != null) {
@@ -566,14 +560,12 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                           final responseData = jsonDecode(response.body);
                           print("API Response: $responseData");
 
-                          // Search for the total amount key in response
                           var serverTotalRaw =
                               responseData['currentAmount'] ??
                               responseData['current_amount'] ??
                               responseData['raised'] ??
                               responseData['raisedAmount'];
 
-                          // Nested 'data' check
                           if (serverTotalRaw == null &&
                               responseData['data'] != null) {
                             final inner = responseData['data'];
@@ -582,8 +574,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                                 inner['current_amount'];
                           }
 
-                          // 4. Intelligent Overwrite
-                          // Only overwrite UI if server returns a plausible TOTAL (greater than current donation)
                           if (serverTotalRaw != null) {
                             double serverTotal =
                                 double.tryParse(serverTotalRaw.toString()) ??
@@ -596,16 +586,8 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                                   campaign!['currentAmount'] = raisedAmount;
                                 }
                               });
-                            } else {
-                              print(
-                                "Server returned a value ($serverTotal) smaller or equal to donation. Keeping optimistic total.",
-                              );
                             }
                           }
-                        } else {
-                          print(
-                            'Failed to update server: ${response.statusCode}',
-                          );
                         }
                       } catch (apiError) {
                         print('Error calling API: $apiError');
@@ -713,7 +695,6 @@ class _donateState extends State<donate> with TickerProviderStateMixin {
                             File(donorProfileImagePath).existsSync();
 
                         final amount = (row['amount'] as num?)?.toDouble() ?? 0;
-                        final currency = row['currency']?.toString() ?? '';
                         final comment = row['comment']?.toString() ?? '';
 
                         return Container(
