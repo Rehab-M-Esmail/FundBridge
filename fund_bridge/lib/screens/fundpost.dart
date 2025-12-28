@@ -70,6 +70,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                   children: [
                     Container(
                       width: MediaQuery.sizeOf(context).width,
+                      height: MediaQuery.sizeOf(context).height * 0.13,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
@@ -82,7 +83,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                         child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Image(
                               height: MediaQuery.of(context).size.height * 0.13,
@@ -135,6 +136,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                 },
                 child: Container(
                   width: MediaQuery.sizeOf(context).width,
+                  height: MediaQuery.sizeOf(context).height * 0.14,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
@@ -147,7 +149,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                   child: Padding(
                     padding: const EdgeInsets.all(7),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Image(
                           height: MediaQuery.of(context).size.height * 0.13,
@@ -197,6 +199,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                 },
                 child: Container(
                   width: MediaQuery.sizeOf(context).width,
+                  height: MediaQuery.sizeOf(context).height * 0.14,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
@@ -209,7 +212,7 @@ class _FundPostPage1State extends State<FundPostPage1> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(5, 5, 5, 5),
                     child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Image(
                           height: MediaQuery.of(context).size.height * 0.13,
